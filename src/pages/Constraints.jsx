@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PLUGOT, PLUGA_COLORS, toDateStr, formatHebrewDate } from "@/lib/constants";
+import TimeSelect from "@/components/TimeSelect";
 import { cn } from "@/lib/utils";
 
 const DAY_NAMES = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];
@@ -42,6 +43,7 @@ export default function Constraints() {
   const [formOpen, setFormOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [viewConstraint, setViewConstraint] = useState(null);
+  const [editing, setEditing] = useState(null);
 
   const [form, setForm] = useState({
     pluga: "",
@@ -81,13 +83,32 @@ export default function Constraints() {
     if (!form.pluga || !form.title || !form.start_time || !form.end_time) return;
     setSaving(true);
     try {
-      await base44.entities.Constraint.create(form);
+      if (editing) {
+        await base44.entities.Constraint.update(editing.id, form);
+        setEditing(null);
+      } else {
+        await base44.entities.Constraint.create(form);
+      }
       setFormOpen(false);
       setForm({ pluga: "", constraint_date: toDateStr(new Date()), start_time: "08:00", end_time: "10:00", title: "", details: "" });
       await loadConstraints();
     } finally {
       setSaving(false);
     }
+  };
+
+  const openEdit = (c) => {
+    setViewConstraint(null);
+    setEditing(c);
+    setForm({
+      pluga: c.pluga || "",
+      constraint_date: getDateOnly(c.constraint_date) || toDateStr(new Date()),
+      start_time: c.start_time || "08:00",
+      end_time: c.end_time || "10:00",
+      title: c.title || "",
+      details: c.details || "",
+    });
+    setFormOpen(true);
   };
 
   const handleDelete = async (id) => {
@@ -121,7 +142,11 @@ export default function Constraints() {
             <p className="text-xs text-muted-foreground">לוח זמנים שבועי</p>
           </div>
         </div>
-        <Button onClick={() => setFormOpen(true)} className="gap-2">
+        <Button onClick={() => {
+          setEditing(null);
+          setForm({ pluga: "", constraint_date: toDateStr(new Date()), start_time: "08:00", end_time: "10:00", title: "", details: "" });
+          setFormOpen(true);
+        }} className="gap-2">
           <Plus className="w-4 h-4" />
           הוסף אילוץ
         </Button>
@@ -212,9 +237,10 @@ export default function Constraints() {
                           )}
                           style={{ top, height, right: 1, left: 1 }}
                         >
+                          <p className="opacity-75 text-[10px] font-medium">{c.pluga}</p>
                           <p className="font-semibold truncate">{c.title}</p>
                           <p className="opacity-80 text-[10px]">{c.start_time} - {c.end_time}</p>
-                          {height > 50 && c.details && (
+                          {height > 60 && c.details && (
                             <p className="opacity-70 mt-1 line-clamp-2">{c.details}</p>
                           )}
                         </div>
@@ -231,7 +257,7 @@ export default function Constraints() {
       <Dialog open={formOpen} onOpenChange={(o) => !o && setFormOpen(false)}>
         <DialogContent className="sm:max-w-[480px]" dir="rtl">
           <DialogHeader>
-            <DialogTitle>הוספת אילוץ</DialogTitle>
+            <DialogTitle>{editing ? "עריכת אילוץ" : "הוספת אילוץ"}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
@@ -257,20 +283,16 @@ export default function Constraints() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>שעת התחלה *</Label>
-                <Input
-                  type="time"
+                <TimeSelect
                   value={form.start_time}
-                  onChange={(e) => setForm({ ...form, start_time: e.target.value })}
-                  required
+                  onChange={(v) => setForm({ ...form, start_time: v })}
                 />
               </div>
               <div className="space-y-2">
                 <Label>שעת סיום *</Label>
-                <Input
-                  type="time"
+                <TimeSelect
                   value={form.end_time}
-                  onChange={(e) => setForm({ ...form, end_time: e.target.value })}
-                  required
+                  onChange={(v) => setForm({ ...form, end_time: v })}
                 />
               </div>
             </div>
@@ -297,7 +319,7 @@ export default function Constraints() {
                 ביטול
               </Button>
               <Button type="submit" disabled={saving}>
-                {saving ? "שומר..." : "הוסף אילוץ"}
+                {saving ? "שומר..." : editing ? "שמור שינויים" : "הוסף אילוץ"}
               </Button>
             </DialogFooter>
           </form>
@@ -337,6 +359,12 @@ export default function Constraints() {
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setViewConstraint(null)}>סגור</Button>
+            <Button
+              variant="secondary"
+              onClick={() => viewConstraint && openEdit(viewConstraint)}
+            >
+              עריכה
+            </Button>
             <Button
               variant="destructive"
               onClick={() => {
