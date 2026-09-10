@@ -13,6 +13,10 @@ import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
 import Home from '@/pages/Home';
+import AppLayout from '@/components/AppLayout';
+import Shotaf from '@/pages/Shotaf';
+import Constraints from '@/pages/Constraints';
+import DailySummaryPage from '@/pages/DailySummary';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -46,7 +50,12 @@ const AuthenticatedApp = () => {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
-        <Route path="/" element={<Home />} />
+        <Route element={<AppLayout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/shotaf" element={<Shotaf />} />
+          <Route path="/constraints" element={<Constraints />} />
+          <Route path="/daily-summary" element={<DailySummaryPage />} />
+        </Route>
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

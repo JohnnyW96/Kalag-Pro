@@ -5,6 +5,7 @@ import { Plus, Loader2, HardHat, AlertTriangle } from "lucide-react";
 import GapCard, { PRIORITY_RANK, daysSince } from "@/components/gaps/GapCard";
 import GapForm from "@/components/gaps/GapForm";
 import GapFilters from "@/components/gaps/GapFilters";
+import { PLUGOT } from "@/lib/constants";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -48,10 +49,7 @@ export default function Home() {
     return unsubscribe;
   }, [loadGaps]);
 
-  const companies = useMemo(() => {
-    const set = new Set(gaps.map((g) => g.company).filter(Boolean));
-    return Array.from(set).sort();
-  }, [gaps]);
+  const companies = PLUGOT;
 
   const filtered = useMemo(() => {
     let list = gaps.filter((g) => {
@@ -135,9 +133,9 @@ export default function Home() {
   };
 
   return (
-    <div dir="rtl" className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100/50">
+    <>
       {/* Header */}
-      <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-border">
+      <header className="bg-white/80 backdrop-blur-md border-b border-border">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-sm">
@@ -232,7 +230,7 @@ export default function Home() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </>
   );
 }
 

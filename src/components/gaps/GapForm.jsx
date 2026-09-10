@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { PLUGOT, LOCATIONS } from "@/lib/constants";
 
 const STATUSES = ["טרם הועלה", "בטיפול", "טופל"];
 const PRIORITIES = ["נמוך", "בינוני", "גבוה", "קריטי"];
@@ -44,7 +44,7 @@ export default function GapForm({ open, onClose, onSubmit, editing }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.company.trim() || !form.gap.trim()) return;
+    if (!form.company || !form.gap.trim()) return;
     setSaving(true);
     try {
       await onSubmit(form);
@@ -62,13 +62,15 @@ export default function GapForm({ open, onClose, onSubmit, editing }) {
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label>פלוגה / חברה *</Label>
-            <Input
-              value={form.company}
-              onChange={(e) => setForm({ ...form, company: e.target.value })}
-              placeholder="לדוגמה: פלוגה א'"
-              required
-            />
+            <Label>פלוגה *</Label>
+            <Select value={form.company} onValueChange={(v) => setForm({ ...form, company: v })}>
+              <SelectTrigger><SelectValue placeholder="בחר פלוגה" /></SelectTrigger>
+              <SelectContent>
+                {PLUGOT.map((p) => (
+                  <SelectItem key={p} value={p}>{p}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-2">
             <Label>תיאור הפער *</Label>
@@ -83,11 +85,14 @@ export default function GapForm({ open, onClose, onSubmit, editing }) {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>מיקום</Label>
-              <Input
-                value={form.location}
-                onChange={(e) => setForm({ ...form, location: e.target.value })}
-                placeholder="לדוגמה: קומה 2, כניסה מזרחית"
-              />
+              <Select value={form.location} onValueChange={(v) => setForm({ ...form, location: v })}>
+                <SelectTrigger><SelectValue placeholder="בחר מיקום" /></SelectTrigger>
+                <SelectContent>
+                  {LOCATIONS.map((l) => (
+                    <SelectItem key={l} value={l}>{l}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label>סטטוס</Label>
