@@ -1,27 +1,30 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
-import { Loader2, Sun, Sunset, Moon } from "lucide-react";
+import { Loader2, Sun, Sunset, Moon, ChevronRight, ChevronLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PLUGOT, PLUGA_COLORS, formatHebrewDate, toDateStr } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 export default function Shotaf() {
-  const today = new Date();
-  const todayStr = toDateStr(today);
+  const [selectedDate, setSelectedDate] = useState(() => new Date());
+  const selectedDateStr = toDateStr(selectedDate);
   const [routine, setRoutine] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(null);
 
   const loadRoutine = useCallback(async () => {
     try {
-      const data = await base44.entities.DailyRoutine.filter({ routine_date: todayStr });
+      const data = await base44.entities.DailyRoutine.filter({ routine_date: selectedDateStr });
       if (data.length > 0) {
         setRoutine(data[0]);
+      } else {
+        setRoutine(null);
       }
     } finally {
       setLoading(false);
     }
-  }, [todayStr]);
+  }, [selectedDateStr]);
 
   useEffect(() => {
     loadRoutine();
@@ -32,7 +35,7 @@ export default function Shotaf() {
     try {
       if (!routine) {
         const created = await base44.entities.DailyRoutine.create({
-          routine_date: todayStr,
+          routine_date: selectedDateStr,
           frisa_morning: "",
           noon_cleaning: "",
           evening_cleaning: "",
@@ -46,6 +49,28 @@ export default function Shotaf() {
     } finally {
       setSaving(null);
     }
+  };
+
+  const goPrevDay = () => {
+    const d = new Date(selectedDate);
+    d.setDate(d.getDate() - 1);
+    setSelectedDate(d);
+    setLoading(true);
+    setRoutine(null);
+  };
+
+  const goNextDay = () => {
+    const d = new Date(selectedDate);
+    d.setDate(d.getDate() + 1);
+    setSelectedDate(d);
+    setLoading(true);
+    setRoutine(null);
+  };
+
+  const goToday = () => {
+    setSelectedDate(new Date());
+    setLoading(true);
+    setRoutine(null);
   };
 
   if (loading) {
@@ -65,8 +90,18 @@ export default function Shotaf() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
       <div className="text-center">
-        <h1 className="text-2xl font-bold">{formatHebrewDate(today)}</h1>
-        <p className="text-sm text-muted-foreground mt-1">שוטף יומי</p>
+        <div className="flex items-center justify-center gap-3 mb-1">
+          <Button variant="outline" size="icon" onClick={goPrevDay}>
+            <ChevronRight className="w-5 h-5" />
+          </Button>
+          <h1 className="text-2xl font-bold">{formatHebrewDate(selectedDate)}</h1>
+          <Button variant="outline" size="icon" onClick={goNextDay}>
+            <ChevronLeft className="w-5 h-5" />
+          </Button>
+        </div>
+        <button onClick={goToday} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+          חזור להיום
+        </button>
       </div>
 
       <div className="space-y-4">

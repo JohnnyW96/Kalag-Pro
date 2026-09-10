@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Loader2, Plus, ChevronRight, ChevronLeft, CalendarRange, X } from "lucide-react";
+import { Loader2, Plus, ChevronRight, ChevronLeft, CalendarRange } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PLUGOT, PLUGA_COLORS, toDateStr } from "@/lib/constants";
+import { PLUGOT, PLUGA_COLORS, toDateStr, formatHebrewDate } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 const DAY_NAMES = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];
@@ -41,6 +41,7 @@ export default function Constraints() {
   const [loading, setLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [viewConstraint, setViewConstraint] = useState(null);
 
   const [form, setForm] = useState({
     pluga: "",
@@ -203,22 +204,15 @@ export default function Constraints() {
                       return (
                         <div
                           key={c.id}
+                          onClick={() => setViewConstraint(c)}
                           className={cn(
-                            "absolute rounded-md p-1.5 text-xs overflow-hidden shadow-sm",
+                            "absolute rounded-md p-1.5 text-xs overflow-hidden shadow-sm cursor-pointer hover:opacity-90 transition-opacity",
                             colors.bg,
                             colors.text
                           )}
-                          style={{ top: top + 1, height: height - 2, right: 2, left: 2 }}
-                          title={`${c.title} - ${c.pluga}\n${c.start_time} - ${c.end_time}${c.details ? "\n" + c.details : ""}`}
+                          style={{ top, height, right: 1, left: 1 }}
                         >
-                          <button
-                            onClick={() => handleDelete(c.id)}
-                            className="absolute top-0.5 left-0.5 opacity-50 hover:opacity-100"
-                            title="מחק"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                          <p className="font-semibold truncate pr-4">{c.title}</p>
+                          <p className="font-semibold truncate">{c.title}</p>
                           <p className="opacity-80 text-[10px]">{c.start_time} - {c.end_time}</p>
                           {height > 50 && c.details && (
                             <p className="opacity-70 mt-1 line-clamp-2">{c.details}</p>
@@ -307,6 +301,54 @@ export default function Constraints() {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!viewConstraint} onOpenChange={(o) => !o && setViewConstraint(null)}>
+        <DialogContent className="sm:max-w-[420px]" dir="rtl">
+          <DialogHeader>
+            <DialogTitle>פרטי אילוץ</DialogTitle>
+          </DialogHeader>
+          {viewConstraint && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className={cn("w-4 h-4 rounded", (PLUGA_COLORS[viewConstraint.pluga] || {}).bg)} />
+                <span className="font-medium">{viewConstraint.pluga}</span>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">כותרת</p>
+                <p className="font-semibold text-lg">{viewConstraint.title}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">תאריך</p>
+                <p className="text-sm">{formatHebrewDate(viewConstraint.constraint_date)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">שעות</p>
+                <p className="text-sm">{viewConstraint.start_time} - {viewConstraint.end_time}</p>
+              </div>
+              {viewConstraint.details && (
+                <div>
+                  <p className="text-xs text-muted-foreground">פירוט</p>
+                  <p className="text-sm whitespace-pre-wrap">{viewConstraint.details}</p>
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setViewConstraint(null)}>סגור</Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (viewConstraint) {
+                  handleDelete(viewConstraint.id);
+                  setViewConstraint(null);
+                }
+              }}
+            >
+              מחק אילוץ
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
