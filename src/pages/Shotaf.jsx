@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { Loader2, Sun, Sunset, Moon } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PLUGOT, formatHebrewDate, toDateStr } from "@/lib/constants";
+import { PLUGOT, PLUGA_COLORS, formatHebrewDate, toDateStr } from "@/lib/constants";
+import { cn } from "@/lib/utils";
 
 export default function Shotaf() {
   const today = new Date();
@@ -56,9 +57,9 @@ export default function Shotaf() {
   }
 
   const panels = [
-    { field: "frisa_morning", label: "משיכת פינת פריסה", icon: Sun, color: "bg-amber-50 border-amber-200" },
-    { field: "noon_cleaning", label: "ניקוי צהריים - פינת פריסה ושירותים", icon: Sunset, color: "bg-sky-50 border-sky-200" },
-    { field: "evening_cleaning", label: "ניקוי ערב - פינת פריסה ושירותים", icon: Moon, color: "bg-indigo-50 border-indigo-200" },
+    { field: "frisa_morning", label: "משיכת פינת פריסה", icon: Sun },
+    { field: "noon_cleaning", label: "ניקוי צהריים - פינת פריסה ושירותים", icon: Sunset },
+    { field: "evening_cleaning", label: "ניקוי ערב - פינת פריסה ושירותים", icon: Moon },
   ];
 
   return (
@@ -69,30 +70,37 @@ export default function Shotaf() {
       </div>
 
       <div className="space-y-4">
-        {panels.map(({ field, label, icon: Icon, color }) => (
-          <div key={field} className={`rounded-xl border-2 p-5 ${color}`}>
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center shadow-sm">
-                <Icon className="w-5 h-5 text-slate-700" />
+        {panels.map(({ field, label, icon: Icon }) => {
+          const selectedPluga = routine?.[field];
+          const plugaColor = selectedPluga ? PLUGA_COLORS[selectedPluga] : null;
+          return (
+            <div key={field} className={cn(
+              "rounded-xl border-2 p-5 transition-colors",
+              plugaColor ? `${plugaColor.light} ${plugaColor.border}` : "bg-white border-slate-200"
+            )}>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center shadow-sm">
+                  <Icon className="w-5 h-5 text-slate-700" />
+                </div>
+                <h2 className="text-base font-semibold flex-1">{label}</h2>
+                {saving === field && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
               </div>
-              <h2 className="text-base font-semibold flex-1">{label}</h2>
-              {saving === field && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
+              <Select
+                value={routine?.[field] || ""}
+                onValueChange={(v) => updateField(field, v)}
+              >
+                <SelectTrigger className="bg-white">
+                  <SelectValue placeholder="בחר פלוגה אחראית..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {PLUGOT.map((p) => (
+                    <SelectItem key={p} value={p}>{p}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-            <Select
-              value={routine?.[field] || ""}
-              onValueChange={(v) => updateField(field, v)}
-            >
-              <SelectTrigger className="bg-white">
-                <SelectValue placeholder="בחר פלוגה אחראית..." />
-              </SelectTrigger>
-              <SelectContent>
-                {PLUGOT.map((p) => (
-                  <SelectItem key={p} value={p}>{p}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

@@ -25,9 +25,9 @@ export const LOCATIONS = [
 export const PLUGA_COLORS = {
   "פארן": { bg: "bg-blue-500", text: "text-white", light: "bg-blue-100", border: "border-blue-400", dot: "bg-blue-500" },
   "בשור": { bg: "bg-emerald-500", text: "text-white", light: "bg-emerald-100", border: "border-emerald-400", dot: "bg-emerald-500" },
-  "צין": { bg: "bg-amber-500", text: "text-white", light: "bg-amber-100", border: "border-amber-400", dot: "bg-amber-500" },
-  "רמון": { bg: "bg-purple-500", text: "text-white", light: "bg-purple-100", border: "border-purple-400", dot: "bg-purple-500" },
-  "תמר": { bg: "bg-rose-500", text: "text-white", light: "bg-rose-100", border: "border-rose-400", dot: "bg-rose-500" },
+  "צין": { bg: "bg-slate-900", text: "text-white", light: "bg-slate-200", border: "border-slate-600", dot: "bg-slate-900" },
+  "רמון": { bg: "bg-red-500", text: "text-white", light: "bg-red-100", border: "border-red-400", dot: "bg-red-500" },
+  "תמר": { bg: "bg-yellow-400", text: "text-slate-900", light: "bg-yellow-100", border: "border-yellow-400", dot: "bg-yellow-400" },
 };
 
 const DAY_NAMES = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];
