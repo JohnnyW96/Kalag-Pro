@@ -7,8 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PLUGOT, PLUGA_COLORS, toDateStr, formatHebrewDate } from "@/lib/constants";
+import { PLUGOT, PLUGA_COLORS, EVENT_COLORS, toDateStr, formatHebrewDate } from "@/lib/constants";
 import TimeSelect from "@/components/TimeSelect";
+import EventForm from "@/components/constraints/EventForm";
 import { cn } from "@/lib/utils";
 
 const DAY_NAMES = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];
@@ -44,6 +45,10 @@ export default function Constraints() {
   const [saving, setSaving] = useState(false);
   const [viewConstraint, setViewConstraint] = useState(null);
   const [editing, setEditing] = useState(null);
+  const [events, setEvents] = useState([]);
+  const [eventFormOpen, setEventFormOpen] = useState(false);
+  const [eventEditing, setEventEditing] = useState(null);
+  const [viewEvent, setViewEvent] = useState(null);
 
   const [form, setForm] = useState({
     pluga: "",
@@ -74,6 +79,41 @@ export default function Constraints() {
   useEffect(() => {
     loadConstraints();
   }, [loadConstraints]);
+
+  const loadEvents = useCallback(async () => {
+    try {
+      const data = await base44.entities.Event.list("-event_date", 500);
+      setEvents(data);
+    } catch (e) {
+      // ignore
+    }
+  }, []);
+
+  useEffect(() => {
+    loadEvents();
+  }, [loadEvents]);
+
+  const handleEventSubmit = async (formData) => {
+    if (eventEditing) {
+      await base44.entities.Event.update(eventEditing.id, formData);
+      setEventEditing(null);
+    } else {
+      await base44.entities.Event.create(formData);
+    }
+    await loadEvents();
+  };
+
+  const handleEventDelete = async (id) => {
+    await base44.entities.Event.delete(id);
+    setViewEvent(null);
+    await loadEvents();
+  };
+
+  const openEventEdit = (e) => {
+    setViewEvent(null);
+    setEventEditing(e);
+    setEventFormOpen(true);
+  };
 
   const hours = Array.from({ length: HOUR_END - HOUR_START + 1 }, (_, i) => HOUR_START + i);
   const totalHeight = (HOUR_END - HOUR_START) * HOUR_HEIGHT;
@@ -142,14 +182,20 @@ export default function Constraints() {
             <p className="text-xs text-muted-foreground">לוח זמנים שבועי</p>
           </div>
         </div>
-        <Button onClick={() => {
-          setEditing(null);
-          setForm({ pluga: "", constraint_date: toDateStr(new Date()), start_time: "08:00", end_time: "10:00", title: "", details: "" });
-          setFormOpen(true);
-        }} className="gap-2">
-          <Plus className="w-4 h-4" />
-          הוסף אילוץ
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={() => {
+            setEditing(null);
+            setForm({ pluga: "", constraint_date: toDateStr(new Date()), start_time: "08:00", end_time: "10:00", title: "", details: "" });
+            setFormOpen(true);
+          }} className="gap-2">
+            <Plus className="w-4 h-4" />
+            הוסף אילוץ
+          </Button>
+          <Button onClick={() => { setEventEditing(null); setEventFormOpen(true); }} variant="outline" className="gap-2 bg-amber-100 border-amber-300 text-amber-900 hover:bg-amber-200">
+            <Plus className="w-4 h-4" />
+            הוסף אירוע
+          </Button>
+        </div>
       </div>
 
       <div className="flex items-center justify-between bg-white rounded-xl border border-border p-3">
@@ -168,6 +214,10 @@ export default function Constraints() {
       </div>
 
       <div className="flex flex-wrap gap-3">
+        <div className="flex items-center gap-2 text-sm">
+          <div className={cn("w-4 h-4 rounded", EVENT_COLORS.bg)} />
+          <span>אירוע</span>
+        </div>
         {PLUGOT.map((p) => (
           <div key={p} className="flex items-center gap-2 text-sm">
             <div className={cn("w-4 h-4 rounded", PLUGA_COLORS[p].bg)} />
@@ -209,6 +259,9 @@ export default function Constraints() {
                 const dayConstraints = constraints.filter(
                   (c) => getDateOnly(c.constraint_date) === dateStr
                 );
+                const dayEvents = events.filter(
+                  (e) => getDateOnly(e.event_date) === dateStr
+                );
                 return (
                   <div
                     key={i}
@@ -243,6 +296,26 @@ export default function Constraints() {
                           {height > 60 && c.details && (
                             <p className="opacity-70 mt-1 line-clamp-2">{c.details}</p>
                           )}
+                        </div>
+                      );
+                    })}
+                    {dayEvents.map((e) => {
+                      const top = timeToPx(e.start_time);
+                      const height = Math.max(timeToPx(e.end_time) - top, 20);
+                      return (
+                        <div
+                          key={e.id}
+                          onClick={() => setViewEvent(e)}
+                          className={cn(
+                            "absolute rounded-md p-1.5 text-xs overflow-hidden shadow-sm cursor-pointer hover:opacity-90 transition-opacity",
+                            EVENT_COLORS.bg,
+                            EVENT_COLORS.text
+                          )}
+                          style={{ top, height, right: 1, left: 1 }}
+                        >
+                          <p className="opacity-75 text-[10px] font-medium">{e.event_type}</p>
+                          <p className="font-semibold truncate">{e.title}</p>
+                          <p className="opacity-80 text-[10px]">{e.start_time} - {e.end_time}</p>
                         </div>
                       );
                     })}
@@ -379,6 +452,93 @@ export default function Constraints() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={!!viewEvent} onOpenChange={(o) => !o && setViewEvent(null)}>
+        <DialogContent className="sm:max-w-[420px]" dir="rtl">
+          <DialogHeader>
+            <DialogTitle>פרטי אירוע</DialogTitle>
+          </DialogHeader>
+          {viewEvent && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className={cn("px-2 py-0.5 rounded-full text-xs font-medium", EVENT_COLORS.bg, EVENT_COLORS.text)}>
+                  {viewEvent.event_type === "חיצוני" ? "אירוע חיצוני" : "אירוע פנימי"}
+                </div>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">כותרת</p>
+                <p className="font-semibold text-lg">{viewEvent.title}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">תאריך</p>
+                <p className="text-sm">{formatHebrewDate(viewEvent.event_date)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">שעות</p>
+                <p className="text-sm">{viewEvent.start_time} - {viewEvent.end_time}</p>
+              </div>
+              {viewEvent.details && (
+                <div>
+                  <p className="text-xs text-muted-foreground">פירוט</p>
+                  <p className="text-sm whitespace-pre-wrap">{viewEvent.details}</p>
+                </div>
+              )}
+              {viewEvent.event_type === "חיצוני" && (
+                <>
+                  <div className="border-t pt-3 space-y-1">
+                    <p className="text-xs font-semibold text-amber-900">הסעים</p>
+                    <p className="text-sm">
+                      <span className="text-muted-foreground">פלוגה: </span>
+                      {viewEvent.transport_pluga || "טרם הוחלט"}
+                    </p>
+                    {viewEvent.transport_details && (
+                      <p className="text-sm text-muted-foreground">{viewEvent.transport_details}</p>
+                    )}
+                  </div>
+                  <div className="border-t pt-3 space-y-1">
+                    <p className="text-xs font-semibold text-amber-900">אוכל</p>
+                    <p className="text-sm">
+                      <span className="text-muted-foreground">פלוגה: </span>
+                      {viewEvent.food_pluga || "טרם הוחלט"}
+                    </p>
+                    {viewEvent.food_details && (
+                      <p className="text-sm text-muted-foreground">{viewEvent.food_details}</p>
+                    )}
+                  </div>
+                </>
+              )}
+              {viewEvent.event_type === "פנימי" && (
+                <div className="border-t pt-3 space-y-1">
+                  <p className="text-xs font-semibold text-amber-900 mb-2">פלוגות אחראיות</p>
+                  {viewEvent.responsible_plugas && viewEvent.responsible_plugas.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {viewEvent.responsible_plugas.map((p) => (
+                        <span key={p} className={cn("text-xs px-2 py-1 rounded-full", PLUGA_COLORS[p]?.light || "bg-muted")}>
+                          {p}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">טרם הוחלט</p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setViewEvent(null)}>סגור</Button>
+            <Button variant="secondary" onClick={() => viewEvent && openEventEdit(viewEvent)}>עריכה</Button>
+            <Button variant="destructive" onClick={() => viewEvent && handleEventDelete(viewEvent.id)}>מחק אירוע</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <EventForm
+        open={eventFormOpen}
+        onClose={() => setEventFormOpen(false)}
+        onSubmit={handleEventSubmit}
+        editing={eventEditing}
+      />
     </div>
   );
 }

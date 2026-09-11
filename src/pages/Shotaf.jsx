@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Loader2, Sun, Sunset, Moon, ChevronRight, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PLUGOT, PLUGA_COLORS, formatHebrewDate, toDateStr } from "@/lib/constants";
+import { PLUGOT, PLUGA_COLORS, SHOTAF_OPTIONS, formatHebrewDate, toDateStr } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 export default function Shotaf() {
@@ -36,9 +36,9 @@ export default function Shotaf() {
       if (!routine) {
         const created = await base44.entities.DailyRoutine.create({
           routine_date: selectedDateStr,
-          frisa_morning: "",
-          noon_cleaning: "",
-          evening_cleaning: "",
+          frisa_morning: "טרם הוחלט",
+          noon_cleaning: "טרם הוחלט",
+          evening_cleaning: "טרם הוחלט",
           [field]: value,
         });
         setRoutine(created);
@@ -106,12 +106,13 @@ export default function Shotaf() {
 
       <div className="space-y-4">
         {panels.map(({ field, label, icon: Icon }) => {
-          const selectedPluga = routine?.[field];
-          const plugaColor = selectedPluga ? PLUGA_COLORS[selectedPluga] : null;
+          const selectedPluga = routine?.[field] || "טרם הוחלט";
+          const isUnassigned = selectedPluga === "טרם הוחלט";
+          const plugaColor = !isUnassigned ? PLUGA_COLORS[selectedPluga] : null;
           return (
             <div key={field} className={cn(
               "rounded-xl border-2 p-5 transition-colors",
-              plugaColor ? `${plugaColor.light} ${plugaColor.border}` : "bg-white border-slate-200"
+              plugaColor ? `${plugaColor.light} ${plugaColor.border}` : "bg-amber-50 border-amber-300"
             )}>
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center shadow-sm">
@@ -128,7 +129,7 @@ export default function Shotaf() {
                   <SelectValue placeholder="בחר פלוגה אחראית..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {PLUGOT.map((p) => (
+                  {SHOTAF_OPTIONS.map((p) => (
                     <SelectItem key={p} value={p}>{p}</SelectItem>
                   ))}
                 </SelectContent>

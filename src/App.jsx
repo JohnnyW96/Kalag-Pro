@@ -17,6 +17,7 @@ import AppLayout from '@/components/AppLayout';
 import Shotaf from '@/pages/Shotaf';
 import Constraints from '@/pages/Constraints';
 import DailySummaryPage from '@/pages/DailySummary';
+import Tasks from '@/pages/Tasks';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -55,6 +56,7 @@ const AuthenticatedApp = () => {
           <Route path="/shotaf" element={<Shotaf />} />
           <Route path="/constraints" element={<Constraints />} />
           <Route path="/daily-summary" element={<DailySummaryPage />} />
+          <Route path="/tasks" element={<Tasks />} />
         </Route>
       </Route>
       <Route path="*" element={<PageNotFound />} />

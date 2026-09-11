@@ -25,8 +25,8 @@ export default function Home() {
   const [deleting, setDeleting] = useState(null);
 
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [priorityFilter, setPriorityFilter] = useState("all");
+  const [statusFilters, setStatusFilters] = useState([]);
+  const [priorityFilters, setPriorityFilters] = useState([]);
   const [companyFilter, setCompanyFilter] = useState("all");
   const [sort, setSort] = useState("priority");
   const [staleOnly, setStaleOnly] = useState(false);
@@ -53,8 +53,8 @@ export default function Home() {
 
   const filtered = useMemo(() => {
     let list = gaps.filter((g) => {
-      if (statusFilter !== "all" && g.status !== statusFilter) return false;
-      if (priorityFilter !== "all" && g.priority !== priorityFilter) return false;
+      if (statusFilters.length > 0 && !statusFilters.includes(g.status)) return false;
+      if (priorityFilters.length > 0 && !priorityFilters.includes(g.priority)) return false;
       if (companyFilter !== "all" && g.company !== companyFilter) return false;
       if (staleOnly) {
         const d = daysSince(g.updated_date);
@@ -86,7 +86,7 @@ export default function Home() {
       }
     });
     return list;
-  }, [gaps, statusFilter, priorityFilter, companyFilter, staleOnly, staleDays, search, sort]);
+  }, [gaps, statusFilters, priorityFilters, companyFilter, staleOnly, staleDays, search, sort]);
 
   const stats = useMemo(() => {
     const byStatus = { "טרם הועלה": 0, "בטיפול": 0, "טופל": 0 };
@@ -166,10 +166,10 @@ export default function Home() {
         <GapFilters
           search={search}
           setSearch={setSearch}
-          statusFilter={statusFilter}
-          setStatusFilter={setStatusFilter}
-          priorityFilter={priorityFilter}
-          setPriorityFilter={setPriorityFilter}
+          statusFilters={statusFilters}
+          setStatusFilters={setStatusFilters}
+          priorityFilters={priorityFilters}
+          setPriorityFilters={setPriorityFilters}
           companyFilter={companyFilter}
           setCompanyFilter={setCompanyFilter}
           companies={companies}

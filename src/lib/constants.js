@@ -47,3 +47,13 @@ export function toDateStr(date) {
   const d = String(date.getDate()).padStart(2, "0");
   return `${y}-${m}-${d}`;
 }
+
+export const SHOTAF_OPTIONS = ["טרם הוחלט", ...PLUGOT];
+
+export const EVENT_COLORS = {
+  bg: "bg-amber-200",
+  text: "text-amber-900",
+  light: "bg-amber-50",
+  border: "border-amber-400",
+  dot: "bg-amber-300",
+};

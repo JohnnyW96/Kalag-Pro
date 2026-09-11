@@ -1,11 +1,12 @@
 import { NavLink } from "react-router-dom";
-import { HardHat, CalendarDays, CalendarRange, ClipboardList } from "lucide-react";
+import { HardHat, CalendarDays, CalendarRange, ClipboardList, ClipboardCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { to: "/", label: "פערים", icon: HardHat },
   { to: "/shotaf", label: "שוטף", icon: CalendarDays },
   { to: "/constraints", label: "אילוצים", icon: CalendarRange },
+  { to: "/tasks", label: "משימות", icon: ClipboardCheck },
   { to: "/daily-summary", label: "סיכום מסדר", icon: ClipboardList },
 ];
 

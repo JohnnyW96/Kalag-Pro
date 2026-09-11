@@ -2,6 +2,7 @@ import React from "react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, SlidersHorizontal } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const STATUSES = ["טרם הועלה", "בטיפול", "טופל"];
 const PRIORITIES = ["נמוך", "בינוני", "גבוה", "קריטי"];
@@ -9,10 +10,10 @@ const PRIORITIES = ["נמוך", "בינוני", "גבוה", "קריטי"];
 export default function GapFilters({
   search,
   setSearch,
-  statusFilter,
-  setStatusFilter,
-  priorityFilter,
-  setPriorityFilter,
+  statusFilters,
+  setStatusFilters,
+  priorityFilters,
+  setPriorityFilters,
   companyFilter,
   setCompanyFilter,
   companies,
@@ -23,6 +24,13 @@ export default function GapFilters({
   staleDays,
   setStaleDays,
 }) {
+  const toggleStatus = (s) => {
+    setStatusFilters((prev) => (prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]));
+  };
+  const togglePriority = (p) => {
+    setPriorityFilters((prev) => (prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p]));
+  };
+
   return (
     <div dir="rtl" className="flex flex-col gap-3">
       <div className="flex flex-col md:flex-row gap-3">
@@ -35,24 +43,6 @@ export default function GapFilters({
             className="pr-10"
           />
         </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="md:w-[170px]"><SelectValue placeholder="סטטוס" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">כל הסטטוסים</SelectItem>
-            {STATUSES.map((s) => (
-              <SelectItem key={s} value={s}>{s}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-          <SelectTrigger className="md:w-[150px]"><SelectValue placeholder="עדיפות" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">כל העדיפויות</SelectItem>
-            {PRIORITIES.map((p) => (
-              <SelectItem key={p} value={p}>{p}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
         <Select value={companyFilter} onValueChange={setCompanyFilter}>
           <SelectTrigger className="md:w-[170px]"><SelectValue placeholder="פלוגה" /></SelectTrigger>
           <SelectContent>
@@ -74,6 +64,52 @@ export default function GapFilters({
             <SelectItem value="oldest">ישן ביותר</SelectItem>
           </SelectContent>
         </Select>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-sm text-muted-foreground">סטטוס:</span>
+        {STATUSES.map((s) => (
+          <button
+            key={s}
+            onClick={() => toggleStatus(s)}
+            className={cn(
+              "text-xs px-3 py-1.5 rounded-full border transition-colors",
+              statusFilters.includes(s)
+                ? "bg-slate-900 text-white border-slate-900"
+                : "bg-white text-muted-foreground border-border hover:bg-muted"
+            )}
+          >
+            {s}
+          </button>
+        ))}
+        {statusFilters.length > 0 && (
+          <button onClick={() => setStatusFilters([])} className="text-xs text-muted-foreground hover:text-foreground underline">
+            נקה
+          </button>
+        )}
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-sm text-muted-foreground">עדיפות:</span>
+        {PRIORITIES.map((p) => (
+          <button
+            key={p}
+            onClick={() => togglePriority(p)}
+            className={cn(
+              "text-xs px-3 py-1.5 rounded-full border transition-colors",
+              priorityFilters.includes(p)
+                ? "bg-slate-900 text-white border-slate-900"
+                : "bg-white text-muted-foreground border-border hover:bg-muted"
+            )}
+          >
+            {p}
+          </button>
+        ))}
+        {priorityFilters.length > 0 && (
+          <button onClick={() => setPriorityFilters([])} className="text-xs text-muted-foreground hover:text-foreground underline">
+            נקה
+          </button>
+        )}
       </div>
 
       <div className="flex flex-wrap items-center gap-3 text-sm">

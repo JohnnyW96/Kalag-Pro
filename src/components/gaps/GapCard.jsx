@@ -1,7 +1,7 @@
 import React from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, MapPin, Building2, Clock } from "lucide-react";
+import { Pencil, Trash2, MapPin, Building2, Clock, CalendarPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const STATUS_STYLES = {
@@ -18,6 +18,12 @@ const PRIORITY_STYLES = {
 };
 
 const PRIORITY_RANK = { "קריטי": 4, "גבוה": 3, "בינוני": 2, "נמוך": 1 };
+
+function formatShortDate(dateStr) {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+}
 
 function daysSince(dateStr) {
   if (!dateStr) return null;
@@ -75,6 +81,12 @@ export default function GapCard({ gap, onEdit, onDelete, onStatusChange, staleDa
           <span className="flex items-center gap-1">
             <MapPin className="w-3.5 h-3.5" />
             {gap.location}
+          </span>
+        )}
+        {gap.created_date && (
+          <span className="flex items-center gap-1">
+            <CalendarPlus className="w-3.5 h-3.5" />
+            נפתח {formatShortDate(gap.created_date)}
           </span>
         )}
       </div>
