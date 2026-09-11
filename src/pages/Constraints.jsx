@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PLUGOT, PLUGA_COLORS, EVENT_COLORS, toDateStr, formatHebrewDate } from "@/lib/constants";
-import TimeSelect from "@/components/TimeSelect";
+import TimeInput from "@/components/TimeInput";
 import EventForm from "@/components/constraints/EventForm";
 import { cn } from "@/lib/utils";
 
@@ -281,7 +281,10 @@ export default function Constraints() {
                     ))}
                     {dayConstraints.map((c) => {
                       const top = timeToPx(c.start_time);
-                      const height = Math.max(timeToPx(c.end_time) - top, 20);
+                      const isCrossMidnight = c.end_time < c.start_time;
+                      const height = isCrossMidnight
+                        ? Math.max(totalHeight - top, 40)
+                        : Math.max(timeToPx(c.end_time) - top, 20);
                       const colors = PLUGA_COLORS[c.pluga] || PLUGA_COLORS[PLUGOT[0]];
                       return (
                         <div
@@ -305,7 +308,10 @@ export default function Constraints() {
                     })}
                     {dayEvents.map((e) => {
                       const top = timeToPx(e.start_time);
-                      const height = Math.max(timeToPx(e.end_time) - top, 20);
+                      const isCrossMidnight = e.end_time < e.start_time;
+                      const height = isCrossMidnight
+                        ? Math.max(totalHeight - top, 40)
+                        : Math.max(timeToPx(e.end_time) - top, 20);
                       return (
                         <div
                           key={e.id}
@@ -360,14 +366,14 @@ export default function Constraints() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>שעת התחלה *</Label>
-                <TimeSelect
+                <TimeInput
                   value={form.start_time}
                   onChange={(v) => setForm({ ...form, start_time: v })}
                 />
               </div>
               <div className="space-y-2">
                 <Label>שעת סיום *</Label>
-                <TimeSelect
+                <TimeInput
                   value={form.end_time}
                   onChange={(v) => setForm({ ...form, end_time: v })}
                 />

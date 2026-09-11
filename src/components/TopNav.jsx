@@ -12,7 +12,7 @@ const NAV_ITEMS = [
 
 export default function TopNav() {
   return (
-    <div className="sticky top-0 z-40 bg-slate-900 text-white shadow-md">
+    <div className="bg-slate-900 text-white">
       <div className="max-w-6xl mx-auto px-2 flex items-center gap-1 overflow-x-auto">
         {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
           <NavLink
