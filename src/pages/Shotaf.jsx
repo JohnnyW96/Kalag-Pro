@@ -39,6 +39,7 @@ export default function Shotaf() {
           frisa_morning: "טרם הוחלט",
           noon_cleaning: "טרם הוחלט",
           evening_cleaning: "טרם הוחלט",
+          morning_assembly_plugas: [],
           [field]: value,
         });
         setRoutine(created);
@@ -105,6 +106,47 @@ export default function Shotaf() {
       </div>
 
       <div className="space-y-4">
+        <div className={cn(
+          "rounded-xl border-2 p-5 transition-colors",
+          (routine?.morning_assembly_plugas?.length > 0)
+            ? "bg-blue-50 border-blue-300"
+            : "bg-slate-100 border-slate-300"
+        )}>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center shadow-sm">
+              <Sun className="w-5 h-5 text-slate-700" />
+            </div>
+            <h2 className="text-base font-semibold flex-1">מסדר בוקר - פלוגות אחראיות</h2>
+            {saving === "morning_assembly_plugas" && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {PLUGOT.map((p) => {
+              const selected = (routine?.morning_assembly_plugas || []).includes(p);
+              const color = PLUGA_COLORS[p];
+              return (
+                <button
+                  key={p}
+                  onClick={() => {
+                    const current = routine?.morning_assembly_plugas || [];
+                    const newValue = selected
+                      ? current.filter((x) => x !== p)
+                      : [...current, p];
+                    updateField("morning_assembly_plugas", newValue);
+                  }}
+                  className={cn(
+                    "px-4 py-2 rounded-lg border-2 font-medium text-sm transition-all",
+                    selected
+                      ? `${color.bg} ${color.border} ${color.text}`
+                      : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
+                  )}
+                >
+                  {p}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         {panels.map(({ field, label, icon: Icon }) => {
           const selectedPluga = routine?.[field] || "טרם הוחלט";
           const isUnassigned = selectedPluga === "טרם הוחלט";

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LogIn, Mail, Lock, Loader2 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
 import { safeReturnTo } from "@/lib/authReturnTo";
@@ -14,6 +15,12 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [accessOpen, setAccessOpen] = useState(false);
+  const [accessEmail, setAccessEmail] = useState("");
+  const [accessName, setAccessName] = useState("");
+  const [accessLoading, setAccessLoading] = useState(false);
+  const [accessSuccess, setAccessSuccess] = useState(false);
+  const [accessError, setAccessError] = useState("");
   // Post-login destination (e.g. the MCP OAuth consent page sends users here
   // with returnTo so the grant flow can resume). Same-origin paths only.
   const returnTo = safeReturnTo();
@@ -29,6 +36,23 @@ export default function Login() {
       setError(err.message || "Invalid email or password");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAccessRequest = async (e) => {
+    e.preventDefault();
+    setAccessError("");
+    setAccessLoading(true);
+    try {
+      await base44.functions.invoke("submitAccessRequest", {
+        email: accessEmail,
+        full_name: accessName,
+      });
+      setAccessSuccess(true);
+    } catch (err) {
+      setAccessError(err.response?.data?.error || err.message || "שגיאה בשליחת הבקשה");
+    } finally {
+      setAccessLoading(false);
     }
   };
 
@@ -127,6 +151,81 @@ export default function Login() {
           )}
         </Button>
       </form>
+
+      <div className="mt-6 text-center">
+        <button
+          onClick={() => { setAccessOpen(true); setAccessSuccess(false); setAccessError(""); }}
+          className="text-sm text-primary hover:underline font-medium"
+        >
+          בקשת גישה חדשה
+        </button>
+      </div>
+
+      <Dialog open={accessOpen} onOpenChange={setAccessOpen}>
+        <DialogContent dir="rtl" className="max-h-[85vh] overflow-y-auto">
+          {accessSuccess ? (
+            <div className="text-center py-4">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-100 flex items-center justify-center">
+                <Mail className="w-8 h-8 text-green-600" />
+              </div>
+              <h2 className="text-lg font-bold mb-2">הבקשה נשלחה!</h2>
+              <p className="text-sm text-muted-foreground mb-4">
+                בקשתך התקבלה וממתינה לאישור מנהל. תקבל הזמנה לאימייל לאחר אישור.
+              </p>
+              <Button onClick={() => setAccessOpen(false)} className="w-full">סגירה</Button>
+            </div>
+          ) : (
+            <>
+              <DialogHeader>
+                <DialogTitle>בקשת גישה למערכת</DialogTitle>
+              </DialogHeader>
+              {accessError && (
+                <div className="mb-3 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+                  {accessError}
+                </div>
+              )}
+              <form onSubmit={handleAccessRequest} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="access-email">אימייל</Label>
+                  <Input
+                    id="access-email"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={accessEmail}
+                    onChange={(e) => setAccessEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="access-name">שם מלא (אופציונלי)</Label>
+                  <Input
+                    id="access-name"
+                    type="text"
+                    placeholder="שם מלא"
+                    value={accessName}
+                    onChange={(e) => setAccessName(e.target.value)}
+                  />
+                </div>
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={() => setAccessOpen(false)}>
+                    ביטול
+                  </Button>
+                  <Button type="submit" disabled={accessLoading}>
+                    {accessLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 ml-2 animate-spin" />
+                        שולח...
+                      </>
+                    ) : (
+                      "שלח בקשה"
+                    )}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </AuthLayout>
   );
 }
