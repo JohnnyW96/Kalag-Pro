@@ -191,7 +191,7 @@ export default function Constraints() {
             <Plus className="w-4 h-4" />
             הוסף אילוץ
           </Button>
-          <Button onClick={() => { setEventEditing(null); setEventFormOpen(true); }} variant="outline" className="gap-2 bg-amber-100 border-amber-300 text-amber-900 hover:bg-amber-200">
+          <Button onClick={() => { setEventEditing(null); setEventFormOpen(true); }} variant="outline" className="gap-2 bg-slate-200 border-slate-400 text-slate-900 hover:bg-slate-300">
             <Plus className="w-4 h-4" />
             הוסף אירוע
           </Button>
@@ -235,12 +235,15 @@ export default function Constraints() {
           <div className="min-w-[700px]">
             <div className="flex border-b border-border bg-slate-50">
               <div className="w-14 shrink-0"></div>
-              {days.map((d, i) => (
-                <div key={i} className="flex-1 text-center py-2 border-l border-border last:border-l-0">
-                  <p className="text-sm font-medium">{DAY_NAMES[d.getDay()]}</p>
-                  <p className="text-xs text-muted-foreground">{d.getDate()}/{d.getMonth() + 1}</p>
-                </div>
-              ))}
+              {days.map((d, i) => {
+                const isToday = toDateStr(d) === toDateStr(new Date());
+                return (
+                  <div key={i} className={cn("flex-1 text-center py-2 border-l border-border last:border-l-0", isToday && "bg-slate-200/60")}>
+                    <p className="text-sm font-medium">{DAY_NAMES[d.getDay()]}</p>
+                    <p className="text-xs text-muted-foreground">{d.getDate()}/{d.getMonth() + 1}</p>
+                  </div>
+                );
+              })}
             </div>
             <div className="flex">
               <div className="w-14 shrink-0">
@@ -262,10 +265,11 @@ export default function Constraints() {
                 const dayEvents = events.filter(
                   (e) => getDateOnly(e.event_date) === dateStr
                 );
+                const isToday = dateStr === toDateStr(new Date());
                 return (
                   <div
                     key={i}
-                    className="flex-1 relative border-l border-border last:border-l-0"
+                    className={cn("flex-1 relative border-l border-border last:border-l-0", isToday && "bg-slate-100/40")}
                     style={{ height: totalHeight }}
                   >
                     {hours.map((h, hi) => (
@@ -486,7 +490,7 @@ export default function Constraints() {
               {viewEvent.event_type === "חיצוני" && (
                 <>
                   <div className="border-t pt-3 space-y-1">
-                    <p className="text-xs font-semibold text-amber-900">הסעים</p>
+                    <p className="text-xs font-semibold text-slate-700">הסעים</p>
                     <p className="text-sm">
                       <span className="text-muted-foreground">פלוגה: </span>
                       {viewEvent.transport_pluga || "טרם הוחלט"}
@@ -496,7 +500,7 @@ export default function Constraints() {
                     )}
                   </div>
                   <div className="border-t pt-3 space-y-1">
-                    <p className="text-xs font-semibold text-amber-900">אוכל</p>
+                    <p className="text-xs font-semibold text-slate-700">אוכל</p>
                     <p className="text-sm">
                       <span className="text-muted-foreground">פלוגה: </span>
                       {viewEvent.food_pluga || "טרם הוחלט"}
@@ -509,7 +513,7 @@ export default function Constraints() {
               )}
               {viewEvent.event_type === "פנימי" && (
                 <div className="border-t pt-3 space-y-1">
-                  <p className="text-xs font-semibold text-amber-900 mb-2">פלוגות אחראיות</p>
+                  <p className="text-xs font-semibold text-slate-700 mb-2">פלוגות אחראיות</p>
                   {viewEvent.responsible_plugas && viewEvent.responsible_plugas.length > 0 ? (
                     <div className="flex flex-wrap gap-2">
                       {viewEvent.responsible_plugas.map((p) => (

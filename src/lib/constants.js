@@ -51,9 +51,9 @@ export function toDateStr(date) {
 export const SHOTAF_OPTIONS = ["טרם הוחלט", ...PLUGOT];
 
 export const EVENT_COLORS = {
-  bg: "bg-amber-200",
-  text: "text-amber-900",
-  light: "bg-amber-50",
-  border: "border-amber-400",
-  dot: "bg-amber-300",
+  bg: "bg-slate-300",
+  text: "text-slate-900",
+  light: "bg-slate-100",
+  border: "border-slate-400",
+  dot: "bg-slate-400",
 };

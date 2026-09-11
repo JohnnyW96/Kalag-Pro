@@ -112,7 +112,7 @@ export default function Shotaf() {
           return (
             <div key={field} className={cn(
               "rounded-xl border-2 p-5 transition-colors",
-              plugaColor ? `${plugaColor.light} ${plugaColor.border}` : "bg-amber-50 border-amber-300"
+              plugaColor ? `${plugaColor.light} ${plugaColor.border}` : "bg-slate-100 border-slate-300"
             )}>
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center shadow-sm">

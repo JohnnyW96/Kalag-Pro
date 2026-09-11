@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Loader2, Plus, Trash2, ClipboardList, FileText } from "lucide-react";
+import { Loader2, Plus, Trash2, ClipboardList, FileText, Copy } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -25,6 +26,24 @@ export default function DailySummaryPage() {
   const [newArea, setNewArea] = useState("");
   const [newNotes, setNewNotes] = useState("");
   const [saving, setSaving] = useState(false);
+  const { toast } = useToast();
+
+  const handleCopy = async (summary) => {
+    const parsed = parseEntries(summary.entries);
+    const dateStr = formatHebrewDate(summary.summary_date);
+    let text = `סיכום מסדר - ${dateStr}\n\n`;
+    parsed.forEach((e) => {
+      text += `${e.area}:\n`;
+      if (e.notes) text += `${e.notes}\n`;
+      text += `\n`;
+    });
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({ title: "הועתק ללוח", duration: 2000 });
+    } catch (err) {
+      toast({ title: "שגיאה בהעתקה", variant: "destructive" });
+    }
+  };
 
   const loadSummaries = useCallback(async () => {
     try {
@@ -99,9 +118,15 @@ export default function DailySummaryPage() {
             const parsed = parseEntries(s.entries);
             return (
               <div key={s.id} className="bg-white rounded-xl border border-border p-5">
-                <div className="flex items-center gap-2 mb-3">
-                  <FileText className="w-4 h-4 text-muted-foreground" />
-                  <h2 className="text-base font-semibold">{formatHebrewDate(s.summary_date)}</h2>
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-muted-foreground" />
+                    <h2 className="text-base font-semibold">{formatHebrewDate(s.summary_date)}</h2>
+                  </div>
+                  <Button size="sm" variant="outline" onClick={() => handleCopy(s)} className="gap-1.5">
+                    <Copy className="w-3.5 h-3.5" />
+                    העתק
+                  </Button>
                 </div>
                 <div className="space-y-2">
                   {parsed.map((e, i) => (

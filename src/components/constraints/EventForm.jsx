@@ -76,7 +76,7 @@ export default function EventForm({ open, onClose, onSubmit, editing }) {
               className={cn(
                 "flex-1 py-2.5 rounded-lg border-2 text-sm font-medium transition-colors",
                 form.event_type === "חיצוני"
-                  ? "bg-amber-200 text-amber-900 border-amber-400"
+                  ? "bg-slate-300 text-slate-900 border-slate-400"
                   : "bg-white text-muted-foreground border-border"
               )}
             >
@@ -88,7 +88,7 @@ export default function EventForm({ open, onClose, onSubmit, editing }) {
               className={cn(
                 "flex-1 py-2.5 rounded-lg border-2 text-sm font-medium transition-colors",
                 form.event_type === "פנימי"
-                  ? "bg-amber-200 text-amber-900 border-amber-400"
+                  ? "bg-slate-300 text-slate-900 border-slate-400"
                   : "bg-white text-muted-foreground border-border"
               )}
             >
@@ -120,16 +120,18 @@ export default function EventForm({ open, onClose, onSubmit, editing }) {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>שעת התחלה *</Label>
-              <TimeSelect
+              <Input
+                type="time"
                 value={form.start_time}
-                onChange={(v) => setForm({ ...form, start_time: v })}
+                onChange={(e) => setForm({ ...form, start_time: e.target.value })}
               />
             </div>
             <div className="space-y-2">
               <Label>שעת סיום *</Label>
-              <TimeSelect
+              <Input
+                type="time"
                 value={form.end_time}
-                onChange={(v) => setForm({ ...form, end_time: v })}
+                onChange={(e) => setForm({ ...form, end_time: e.target.value })}
               />
             </div>
           </div>
@@ -147,7 +149,7 @@ export default function EventForm({ open, onClose, onSubmit, editing }) {
           {form.event_type === "חיצוני" && (
             <>
               <div className="border-t pt-4 space-y-3">
-                <p className="text-sm font-semibold text-amber-900">הסעים</p>
+                <p className="text-sm font-semibold text-slate-700">הסעים</p>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>פלוגה אחראית</Label>
@@ -176,7 +178,7 @@ export default function EventForm({ open, onClose, onSubmit, editing }) {
               </div>
 
               <div className="space-y-3">
-                <p className="text-sm font-semibold text-amber-900">אוכל</p>
+                <p className="text-sm font-semibold text-slate-700">אוכל</p>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>פלוגה אחראית</Label>
@@ -208,7 +210,7 @@ export default function EventForm({ open, onClose, onSubmit, editing }) {
 
           {form.event_type === "פנימי" && (
             <div className="border-t pt-4 space-y-3">
-              <p className="text-sm font-semibold text-amber-900">פלוגות אחראיות</p>
+              <p className="text-sm font-semibold text-slate-700">פלוגות אחראיות</p>
               <div className="flex flex-wrap gap-2">
                 {PLUGOT.map((p) => (
                   <button

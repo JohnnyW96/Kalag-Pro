@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Loader2, ChevronRight, ChevronLeft, ClipboardList, Archive } from "lucide-react";
@@ -36,6 +37,7 @@ export default function Tasks() {
   const [plugaFilter, setPlugaFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("open");
   const [showArchive, setShowArchive] = useState(false);
+  const navigate = useNavigate();
 
   const loadAll = useCallback(async () => {
     try {
@@ -176,6 +178,14 @@ export default function Tasks() {
     }).filter((g) => g.tasks.length > 0);
   }, [filteredTasks, viewMode, days]);
 
+  const handleTaskClick = (task) => {
+    if (task.type === "shotaf") {
+      navigate("/shotaf");
+    } else if (task.type === "event") {
+      navigate("/constraints");
+    }
+  };
+
   const goPrev = () => {
     if (viewMode === "day") {
       const d = new Date(selectedDate);
@@ -290,7 +300,7 @@ export default function Tasks() {
               </h3>
               <div className="space-y-2">
                 {group.tasks.map((t) => (
-                  <TaskCard key={t.id} task={t} />
+                  <TaskCard key={t.id} task={t} onClick={() => handleTaskClick(t)} />
                 ))}
               </div>
             </div>
@@ -299,7 +309,7 @@ export default function Tasks() {
       ) : (
         <div className="space-y-2">
           {filteredTasks.map((t) => (
-            <TaskCard key={t.id} task={t} />
+            <TaskCard key={t.id} task={t} onClick={() => handleTaskClick(t)} />
           ))}
         </div>
       )}
@@ -317,7 +327,7 @@ export default function Tasks() {
           {showArchive && (
             <div className="space-y-2">
               {archivedTasks.map((t) => (
-                <TaskCard key={t.id} task={t} />
+                <TaskCard key={t.id} task={t} onClick={() => handleTaskClick(t)} />
               ))}
             </div>
           )}
@@ -327,13 +337,13 @@ export default function Tasks() {
   );
 }
 
-function TaskCard({ task }) {
+function TaskCard({ task, onClick }) {
   const isEvent = task.type === "event";
   const plugaColor = task.pluga ? PLUGA_COLORS[task.pluga] : null;
 
   return (
-    <div className={cn(
-      "rounded-lg border p-3 flex items-start gap-3",
+    <div onClick={onClick} className={cn(
+      "rounded-lg border p-3 flex items-start gap-3 cursor-pointer hover:shadow-md transition-shadow",
       task.assigned ? "bg-white border-border opacity-75" : "bg-amber-50 border-amber-200"
     )}>
       <div className={cn(
