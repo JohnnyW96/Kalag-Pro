@@ -5,9 +5,10 @@ import { ChevronDown } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
-const NavigationMenu = React.forwardRef(({ className, children, ...props }, ref) => (
+const NavigationMenu = React.forwardRef(({ className, children, dir = "rtl", ...props }, ref) => (
   <NavigationMenuPrimitive.Root
     ref={ref}
+    dir={dir}
     className={cn(
       "relative z-10 flex max-w-max flex-1 items-center justify-center",
       className

@@ -36,9 +36,10 @@ function MenubarSub({
   return <MenubarPrimitive.Sub data-slot="menubar-sub" {...props} />;
 }
 
-const Menubar = React.forwardRef(({ className, ...props }, ref) => (
+const Menubar = React.forwardRef(({ className, dir = "rtl", ...props }, ref) => (
   <MenubarPrimitive.Root
     ref={ref}
+    dir={dir}
     className={cn(
       "flex h-9 items-center space-x-1 rounded-md border bg-background p-1 shadow-sm",
       className
