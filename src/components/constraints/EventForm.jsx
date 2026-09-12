@@ -6,8 +6,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import TimeInput from "@/components/TimeInput";
-import { PLUGOT, toDateStr } from "@/lib/constants";
+import { PLUGOT, PLUGA_COLORS, toDateStr } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+
+function Dot({ className }) {
+  return <span className={cn("inline-block w-2.5 h-2.5 rounded-full shrink-0", className || "bg-slate-300")} />;
+}
 
 const emptyForm = {
   event_type: "חיצוני",
@@ -159,7 +163,12 @@ export default function EventForm({ open, onClose, onSubmit, editing }) {
                       <SelectContent>
                         <SelectItem value="none">טרם הוחלט</SelectItem>
                         {PLUGOT.map((p) => (
-                          <SelectItem key={p} value={p}>{p}</SelectItem>
+                          <SelectItem key={p} value={p}>
+                            <span className="flex items-center gap-2">
+                              <Dot className={PLUGA_COLORS[p]?.dot} />
+                              {p}
+                            </span>
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -188,7 +197,12 @@ export default function EventForm({ open, onClose, onSubmit, editing }) {
                       <SelectContent>
                         <SelectItem value="none">טרם הוחלט</SelectItem>
                         {PLUGOT.map((p) => (
-                          <SelectItem key={p} value={p}>{p}</SelectItem>
+                          <SelectItem key={p} value={p}>
+                            <span className="flex items-center gap-2">
+                              <Dot className={PLUGA_COLORS[p]?.dot} />
+                              {p}
+                            </span>
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -210,21 +224,26 @@ export default function EventForm({ open, onClose, onSubmit, editing }) {
             <div className="border-t pt-4 space-y-3">
               <p className="text-sm font-semibold text-slate-700">פלוגות אחראיות</p>
               <div className="flex flex-wrap gap-2">
-                {PLUGOT.map((p) => (
-                  <button
-                    key={p}
-                    type="button"
-                    onClick={() => togglePluga(p)}
-                    className={cn(
-                      "text-xs px-3 py-1.5 rounded-full border transition-colors",
-                      form.responsible_plugas.includes(p)
-                        ? "bg-slate-900 text-white border-slate-900"
-                        : "bg-white text-muted-foreground border-border hover:bg-muted"
-                    )}
-                  >
-                    {p}
-                  </button>
-                ))}
+                {PLUGOT.map((p) => {
+                  const selected = form.responsible_plugas.includes(p);
+                  const color = PLUGA_COLORS[p];
+                  return (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => togglePluga(p)}
+                      className={cn(
+                        "flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition-colors",
+                        selected
+                          ? `${color.bg} ${color.text} ${color.border}`
+                          : "bg-white text-muted-foreground border-border hover:bg-muted"
+                      )}
+                    >
+                      <Dot className={selected ? "bg-white/80" : color.dot} />
+                      {p}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}

@@ -5,9 +5,30 @@ import { Loader2, Plus, Trash2, ClipboardList, FileText, Copy } from "lucide-rea
 import { useToast } from "@/components/ui/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { LOCATIONS, formatHebrewDate, toDateStr } from "@/lib/constants";
+import { LOCATIONS, DORM_LOCATIONS, PLUGOT, PLUGA_COLORS, formatHebrewDate, toDateStr } from "@/lib/constants";
+import { cn } from "@/lib/utils";
+
+function Dot({ className }) {
+  return <span className={cn("inline-block w-2 h-2 rounded-full shrink-0", className)} />;
+}
+
+function PlugaBadge({ pluga }) {
+  if (!pluga) return null;
+  return (
+    <span className={cn("inline-flex items-center gap-1.5 text-[11px] px-2 py-0.5 rounded-full font-medium", PLUGA_COLORS[pluga]?.light || "bg-muted")}>
+      <Dot className={PLUGA_COLORS[pluga]?.dot} />
+      {pluga}
+    </span>
+  );
+}
+
+function buildingLabel(entry) {
+  if (!entry.building && !entry.room_number) return "";
+  return `${entry.building || ""}${entry.building && entry.room_number ? " / " : ""}${entry.room_number ? `חדר ${entry.room_number}` : ""}`;
+}
 
 function parseEntries(entries) {
   if (!entries) return [];
@@ -18,22 +39,26 @@ function parseEntries(entries) {
   return [];
 }
 
+const EMPTY_ENTRY = { area: "", notes: "", pluga: "", building: "", room_number: "" };
+
 export default function DailySummaryPage() {
   const [summaries, setSummaries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [builderOpen, setBuilderOpen] = useState(false);
   const [entries, setEntries] = useState([]);
-  const [newArea, setNewArea] = useState("");
-  const [newNotes, setNewNotes] = useState("");
+  const [draft, setDraft] = useState(EMPTY_ENTRY);
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
+
+  const showBuildingFields = DORM_LOCATIONS.includes(draft.area);
 
   const handleCopy = async (summary) => {
     const parsed = parseEntries(summary.entries);
     const dateStr = formatHebrewDate(summary.summary_date);
     let text = `סיכום מסדר - ${dateStr}\n\n`;
     parsed.forEach((e) => {
-      text += `${e.area}:\n`;
+      const extras = [e.pluga, buildingLabel(e)].filter(Boolean).join(" · ");
+      text += `${e.area}${extras ? ` (${extras})` : ""}:\n`;
       if (e.notes) text += `${e.notes}\n`;
       text += `\n`;
     });
@@ -58,11 +83,12 @@ export default function DailySummaryPage() {
     loadSummaries();
   }, [loadSummaries]);
 
+  const setDraftField = (field, value) => setDraft((d) => ({ ...d, [field]: value }));
+
   const addEntry = () => {
-    if (!newArea.trim()) return;
-    setEntries([...entries, { area: newArea, notes: newNotes }]);
-    setNewArea("");
-    setNewNotes("");
+    if (!draft.area.trim()) return;
+    setEntries([...entries, { ...draft }]);
+    setDraft(EMPTY_ENTRY);
   };
 
   const removeEntry = (idx) => {
@@ -131,7 +157,15 @@ export default function DailySummaryPage() {
                 <div className="space-y-2">
                   {parsed.map((e, i) => (
                     <div key={i} className="flex gap-3 text-sm border-r-2 border-slate-200 pr-3">
-                      <div className="font-medium min-w-[140px]">{e.area}</div>
+                      <div className="min-w-[140px] space-y-1">
+                        <div className="font-medium">{e.area}</div>
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <PlugaBadge pluga={e.pluga} />
+                          {buildingLabel(e) && (
+                            <span className="text-[11px] text-muted-foreground">{buildingLabel(e)}</span>
+                          )}
+                        </div>
+                      </div>
                       <div className="text-muted-foreground whitespace-pre-wrap">{e.notes}</div>
                     </div>
                   ))}
@@ -149,22 +183,63 @@ export default function DailySummaryPage() {
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-3 border rounded-lg p-4 bg-slate-50">
-              <div className="space-y-2">
-                <Label>איזור</Label>
-                <Select value={newArea} onValueChange={setNewArea}>
-                  <SelectTrigger><SelectValue placeholder="בחר איזור" /></SelectTrigger>
-                  <SelectContent>
-                    {LOCATIONS.map((l) => (
-                      <SelectItem key={l} value={l}>{l}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label>איזור</Label>
+                  <Select value={draft.area} onValueChange={(v) => setDraftField("area", v)}>
+                    <SelectTrigger><SelectValue placeholder="בחר איזור" /></SelectTrigger>
+                    <SelectContent>
+                      {LOCATIONS.map((l) => (
+                        <SelectItem key={l} value={l}>{l}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>פלוגה רלוונטית</Label>
+                  <Select value={draft.pluga || "none"} onValueChange={(v) => setDraftField("pluga", v === "none" ? "" : v)}>
+                    <SelectTrigger><SelectValue placeholder="ללא" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">ללא</SelectItem>
+                      {PLUGOT.map((p) => (
+                        <SelectItem key={p} value={p}>
+                          <span className="flex items-center gap-2">
+                            <Dot className={PLUGA_COLORS[p]?.dot} />
+                            {p}
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
+
+              {showBuildingFields && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label>מבנה</Label>
+                    <Input
+                      value={draft.building}
+                      onChange={(e) => setDraftField("building", e.target.value)}
+                      placeholder="לדוגמה: מבנה 3"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>מספר חדר</Label>
+                    <Input
+                      value={draft.room_number}
+                      onChange={(e) => setDraftField("room_number", e.target.value)}
+                      placeholder="לדוגמה: 12"
+                    />
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-2">
                 <Label>הערות</Label>
                 <Textarea
-                  value={newNotes}
-                  onChange={(e) => setNewNotes(e.target.value)}
+                  value={draft.notes}
+                  onChange={(e) => setDraftField("notes", e.target.value)}
                   placeholder="הערות לאיזור זה"
                   rows={2}
                 />
@@ -173,7 +248,7 @@ export default function DailySummaryPage() {
                 type="button"
                 variant="outline"
                 onClick={addEntry}
-                disabled={!newArea.trim()}
+                disabled={!draft.area.trim()}
                 className="gap-2 w-full"
               >
                 <Plus className="w-4 h-4" />
@@ -186,10 +261,16 @@ export default function DailySummaryPage() {
                 <p className="text-sm font-medium">פריטים בסיכום ({entries.length}):</p>
                 {entries.map((e, i) => (
                   <div key={i} className="flex items-start gap-3 border rounded-lg p-3 bg-white">
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">{e.area}</p>
+                    <div className="flex-1 space-y-1">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <p className="text-sm font-medium">{e.area}</p>
+                        <PlugaBadge pluga={e.pluga} />
+                        {buildingLabel(e) && (
+                          <span className="text-[11px] text-muted-foreground">{buildingLabel(e)}</span>
+                        )}
+                      </div>
                       {e.notes && (
-                        <p className="text-xs text-muted-foreground mt-1 whitespace-pre-wrap">{e.notes}</p>
+                        <p className="text-xs text-muted-foreground whitespace-pre-wrap">{e.notes}</p>
                       )}
                     </div>
                     <Button
@@ -209,7 +290,7 @@ export default function DailySummaryPage() {
             <Button
               type="button"
               variant="outline"
-              onClick={() => { setBuilderOpen(false); setEntries([]); }}
+              onClick={() => { setBuilderOpen(false); setEntries([]); setDraft(EMPTY_ENTRY); }}
               disabled={saving}
             >
               ביטול

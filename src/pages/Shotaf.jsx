@@ -6,6 +6,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PLUGOT, PLUGA_COLORS, SHOTAF_OPTIONS, formatHebrewDate, toDateStr } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
+function Dot({ className }) {
+  return <span className={cn("inline-block w-2.5 h-2.5 rounded-full shrink-0", className || "bg-slate-300")} />;
+}
+
 export default function Shotaf() {
   const [selectedDate, setSelectedDate] = useState(() => new Date());
   const selectedDateStr = toDateStr(selectedDate);
@@ -134,12 +138,13 @@ export default function Shotaf() {
                     updateField("morning_assembly_plugas", newValue);
                   }}
                   className={cn(
-                    "px-4 py-2 rounded-lg border-2 font-medium text-sm transition-all",
+                    "flex items-center gap-2 px-4 py-2 rounded-lg border-2 font-medium text-sm transition-all",
                     selected
                       ? `${color.bg} ${color.border} ${color.text}`
                       : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
                   )}
                 >
+                  <Dot className={selected ? "bg-white/80" : color.dot} />
                   {p}
                 </button>
               );
@@ -161,6 +166,7 @@ export default function Shotaf() {
                   <Icon className="w-5 h-5 text-slate-700" />
                 </div>
                 <h2 className="text-base font-semibold flex-1">{label}</h2>
+                {plugaColor && <Dot className={plugaColor.dot} />}
                 {saving === field && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
               </div>
               <Select
@@ -172,7 +178,12 @@ export default function Shotaf() {
                 </SelectTrigger>
                 <SelectContent>
                   {SHOTAF_OPTIONS.map((p) => (
-                    <SelectItem key={p} value={p}>{p}</SelectItem>
+                    <SelectItem key={p} value={p}>
+                      <span className="flex items-center gap-2">
+                        <Dot className={p === "טרם הוחלט" ? "bg-slate-300" : PLUGA_COLORS[p]?.dot} />
+                        {p}
+                      </span>
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
