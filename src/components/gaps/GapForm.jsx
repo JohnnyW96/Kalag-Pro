@@ -5,9 +5,13 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PLUGOT, LOCATIONS, DORM_LOCATIONS, toDateStr } from "@/lib/constants";
-import { STATUSES, PRIORITIES } from "@/components/gaps/gapHelpers";
+import { PLUGOT, LOCATIONS, DORM_LOCATIONS, PLUGA_COLORS, toDateStr } from "@/lib/constants";
+import { STATUSES, PRIORITIES, STATUS_DOT, PRIORITY_DOT } from "@/components/gaps/gapHelpers";
 import { cn } from "@/lib/utils";
+
+function Dot({ className }) {
+  return <span className={cn("inline-block w-2.5 h-2.5 rounded-full shrink-0", className)} />;
+}
 
 const EMPTY_FORM = {
   company: "",
@@ -100,7 +104,12 @@ export default function GapForm({ open, onClose, onSubmit, editing }) {
               <SelectTrigger className={errClass("company")}><SelectValue placeholder="בחר פלוגה" /></SelectTrigger>
               <SelectContent>
                 {PLUGOT.map((p) => (
-                  <SelectItem key={p} value={p}>{p}</SelectItem>
+                  <SelectItem key={p} value={p}>
+                    <span className="flex items-center gap-2">
+                      <Dot className={PLUGA_COLORS[p]?.dot} />
+                      {p}
+                    </span>
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -190,7 +199,12 @@ export default function GapForm({ open, onClose, onSubmit, editing }) {
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {STATUSES.map((s) => (
-                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                    <SelectItem key={s} value={s}>
+                      <span className="flex items-center gap-2">
+                        <Dot className={STATUS_DOT[s]} />
+                        {s}
+                      </span>
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -201,7 +215,12 @@ export default function GapForm({ open, onClose, onSubmit, editing }) {
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {PRIORITIES.map((p) => (
-                    <SelectItem key={p} value={p}>{p}</SelectItem>
+                    <SelectItem key={p} value={p}>
+                      <span className="flex items-center gap-2">
+                        <Dot className={PRIORITY_DOT[p]} />
+                        {p}
+                      </span>
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { Loader2 } from "lucide-react";
 import { PLUGOT, LOCATIONS, PLUGA_COLORS } from "@/lib/constants";
-import { PRIORITIES, PRIORITY_STYLES } from "@/components/gaps/gapHelpers";
+import { STATUSES, PRIORITIES, STATUS_DOT, PRIORITY_DOT } from "@/components/gaps/gapHelpers";
 import { cn } from "@/lib/utils";
 
 function round1(n) {
@@ -28,7 +28,7 @@ function BarList({ items }) {
               style={{ width: `${(it.count / max) * 100}%` }}
             />
           </div>
-          <div className="w-6 text-left font-medium">{it.count}</div>
+          <div className="w-6 text-right font-medium">{it.count}</div>
         </div>
       ))}
     </div>
@@ -88,6 +88,13 @@ export default function GapStats({ gaps }) {
     return () => { cancelled = true; };
   }, [gaps]);
 
+  const byStatus = useMemo(() => STATUSES.map((s) => ({
+    label: s,
+    count: gaps.filter((g) => g.status === s).length,
+    dotClass: STATUS_DOT[s],
+    barClass: STATUS_DOT[s],
+  })), [gaps]);
+
   const byCompany = useMemo(() => PLUGOT.map((c) => ({
     label: c,
     count: gaps.filter((g) => g.company === c).length,
@@ -98,7 +105,8 @@ export default function GapStats({ gaps }) {
   const byPriority = useMemo(() => PRIORITIES.map((p) => ({
     label: p,
     count: gaps.filter((g) => g.priority === p).length,
-    barClass: PRIORITY_STYLES[p]?.includes("red") ? "bg-red-500" : PRIORITY_STYLES[p]?.includes("orange") ? "bg-orange-500" : PRIORITY_STYLES[p]?.includes("sky") ? "bg-sky-500" : "bg-slate-400",
+    dotClass: PRIORITY_DOT[p],
+    barClass: PRIORITY_DOT[p],
   })), [gaps]);
 
   const byLocation = useMemo(() => LOCATIONS
@@ -107,14 +115,18 @@ export default function GapStats({ gaps }) {
     .sort((a, b) => b.count - a.count), [gaps]);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div dir="rtl" className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div className="bg-white rounded-xl border border-border p-4 space-y-3">
-        <h3 className="text-sm font-semibold">פערים לפי פלוגה</h3>
-        <BarList items={byCompany} />
+        <h3 className="text-sm font-semibold">פערים לפי סטטוס</h3>
+        <BarList items={byStatus} />
       </div>
       <div className="bg-white rounded-xl border border-border p-4 space-y-3">
         <h3 className="text-sm font-semibold">פערים לפי עדיפות</h3>
         <BarList items={byPriority} />
+      </div>
+      <div className="bg-white rounded-xl border border-border p-4 space-y-3">
+        <h3 className="text-sm font-semibold">פערים לפי פלוגה</h3>
+        <BarList items={byCompany} />
       </div>
       <div className="bg-white rounded-xl border border-border p-4 space-y-3 md:col-span-2">
         <h3 className="text-sm font-semibold">פערים לפי מיקום</h3>

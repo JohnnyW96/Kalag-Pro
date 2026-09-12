@@ -257,7 +257,7 @@ export default function Home() {
 
       <main className="max-w-6xl mx-auto px-4 py-6 space-y-6">
         {/* Stats top cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div dir="rtl" className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <StatCard label="סה״כ פערים" value={stats.total} tone="slate" />
           <StatCard label="טרם הועלה" value={stats["טרם הועלה"]} tone="amber" />
           <StatCard label="בטיפול" value={stats["בטיפול"]} tone="blue" />
@@ -271,7 +271,7 @@ export default function Home() {
           </TabsList>
 
           <TabsContent value="gaps" className="space-y-4 mt-4">
-            <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div dir="rtl" className="flex flex-col lg:flex-row lg:items-start gap-3 w-full">
               <GapFilters
                 search={search}
                 setSearch={setSearch}
@@ -328,7 +328,7 @@ export default function Home() {
                 onOpenDetails={setDetailsGap}
               />
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div dir="rtl" className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {pageItems.map((gap) => (
                   <GapCard
                     key={gap.id}

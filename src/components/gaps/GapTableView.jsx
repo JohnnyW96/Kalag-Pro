@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Pencil, Trash2, History, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PLUGA_COLORS } from "@/lib/constants";
-import { STATUS_STYLES, PRIORITY_STYLES, formatShortDate, formatDateTime } from "@/components/gaps/gapHelpers";
+import { STATUS_STYLES, PRIORITY_STYLES, STATUS_DOT, PRIORITY_DOT, formatShortDate, formatDateTime } from "@/components/gaps/gapHelpers";
 
 const STATUS_CYCLE = ["טרם הועלה", "בטיפול", "טופל"];
 
@@ -52,7 +52,7 @@ export default function GapTableView({ gaps, sortField, sortDir, onSort, onEdit,
   };
 
   return (
-    <div className="bg-white rounded-xl border border-border overflow-x-auto">
+    <div dir="rtl" className="bg-white rounded-xl border border-border overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
@@ -77,7 +77,8 @@ export default function GapTableView({ gaps, sortField, sortDir, onSort, onEdit,
               <TableRow key={gap.id}>
                 <TableCell className="text-muted-foreground">{i + 1}</TableCell>
                 <TableCell>
-                  <span className={cn("text-xs px-2 py-0.5 rounded-full", PLUGA_COLORS[gap.company]?.light || "bg-muted")}>
+                  <span className={cn("flex items-center gap-1.5 w-fit text-xs px-2 py-0.5 rounded-full font-medium", PLUGA_COLORS[gap.company]?.light || "bg-muted")}>
+                    <span className={cn("w-2 h-2 rounded-full", PLUGA_COLORS[gap.company]?.dot)} />
                     {gap.company}
                   </span>
                 </TableCell>
@@ -91,14 +92,16 @@ export default function GapTableView({ gaps, sortField, sortDir, onSort, onEdit,
                 <TableCell>
                   <button
                     onClick={() => cycleStatus(gap)}
-                    className={cn("text-xs px-2 py-0.5 rounded-full border", STATUS_STYLES[gap.status])}
+                    className={cn("flex items-center gap-1.5 text-xs px-2 py-0.5 rounded-full border", STATUS_STYLES[gap.status])}
                     title="לחץ למעבר לסטטוס הבא"
                   >
+                    <span className={cn("w-2 h-2 rounded-full", STATUS_DOT[gap.status])} />
                     {gap.status}
                   </button>
                 </TableCell>
                 <TableCell>
-                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", PRIORITY_STYLES[gap.priority])}>
+                  <span className={cn("flex items-center gap-1.5 w-fit text-xs px-2 py-0.5 rounded-full font-medium", PRIORITY_STYLES[gap.priority])}>
+                    <span className={cn("w-2 h-2 rounded-full", PRIORITY_DOT[gap.priority])} />
                     {gap.priority}
                   </span>
                 </TableCell>

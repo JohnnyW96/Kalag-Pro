@@ -1,11 +1,14 @@
 import React, { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, MapPin, Building2, Clock, CalendarPlus, Phone, Wrench, History } from "lucide-react";
+import { Pencil, Trash2, MapPin, Clock, CalendarPlus, Phone, Wrench, History } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PLUGA_COLORS } from "@/lib/constants";
 import {
   STATUS_STYLES,
   PRIORITY_STYLES,
+  STATUS_DOT,
+  PRIORITY_DOT,
   daysSince,
   formatShortDate,
   formatDateTime,
@@ -27,10 +30,12 @@ export default function GapCard({ gap, onEdit, onDelete, onStatusChange, staleDa
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
-          <span className={cn("text-xs font-medium px-2.5 py-1 rounded-full border", STATUS_STYLES[gap.status])}>
+          <span className={cn("flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border", STATUS_STYLES[gap.status])}>
+            <span className={cn("w-2 h-2 rounded-full", STATUS_DOT[gap.status])} />
             {gap.status}
           </span>
-          <span className={cn("text-xs font-semibold px-2.5 py-1 rounded-full", PRIORITY_STYLES[gap.priority])}>
+          <span className={cn("flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full", PRIORITY_STYLES[gap.priority])}>
+            <span className={cn("w-2 h-2 rounded-full", PRIORITY_DOT[gap.priority])} />
             {gap.priority}
           </span>
           {isStale && (
@@ -55,10 +60,10 @@ export default function GapCard({ gap, onEdit, onDelete, onStatusChange, staleDa
 
       <p className="text-sm font-medium text-foreground leading-relaxed">{gap.gap}</p>
 
-      <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
         {gap.company && (
-          <span className="flex items-center gap-1">
-            <Building2 className="w-3.5 h-3.5" />
+          <span className={cn("flex items-center gap-1 px-2 py-0.5 rounded-full font-medium", PLUGA_COLORS[gap.company]?.light || "bg-muted")}>
+            <span className={cn("w-2 h-2 rounded-full", PLUGA_COLORS[gap.company]?.dot)} />
             {gap.company}
           </span>
         )}

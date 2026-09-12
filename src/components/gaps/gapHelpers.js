@@ -18,6 +18,33 @@ export const PRIORITY_STYLES = {
   "קריטי": "bg-red-100 text-red-700 ring-1 ring-red-200",
 };
 
+// צבעי "נקודה" אחידים לסטטוס/עדיפות — לשימוש בתפריטי בחירה, מסננים וגרפים
+export const STATUS_DOT = {
+  "טרם הועלה": "bg-amber-500",
+  "בטיפול": "bg-blue-500",
+  "טופל": "bg-emerald-500",
+};
+
+export const PRIORITY_DOT = {
+  "נמוך": "bg-slate-400",
+  "בינוני": "bg-sky-500",
+  "גבוה": "bg-orange-500",
+  "קריטי": "bg-red-500",
+};
+
+export const STATUS_SELECTED_STYLES = {
+  "טרם הועלה": "bg-amber-500 text-white border-amber-500",
+  "בטיפול": "bg-blue-500 text-white border-blue-500",
+  "טופל": "bg-emerald-500 text-white border-emerald-500",
+};
+
+export const PRIORITY_SELECTED_STYLES = {
+  "נמוך": "bg-slate-500 text-white border-slate-500",
+  "בינוני": "bg-sky-500 text-white border-sky-500",
+  "גבוה": "bg-orange-500 text-white border-orange-500",
+  "קריטי": "bg-red-500 text-white border-red-500",
+};
+
 // תוויות בעברית לשדות הפער, לשימוש ב-Changelog ובייצוא
 export const GAP_FIELD_LABELS = {
   company: "פלוגה",

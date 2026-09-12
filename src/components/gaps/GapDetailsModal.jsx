@@ -3,11 +3,14 @@ import { base44 } from "@/api/base44Client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Trash2, Phone, MapPin, Building2, History, MessageSquare } from "lucide-react";
+import { Loader2, Trash2, Phone, MapPin, History, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PLUGA_COLORS } from "@/lib/constants";
 import {
   STATUS_STYLES,
   PRIORITY_STYLES,
+  STATUS_DOT,
+  PRIORITY_DOT,
   GAP_FIELD_LABELS,
   formatDateTime,
   formatShortDate,
@@ -78,16 +81,21 @@ export default function GapDetailsModal({ gap, open, onClose, currentUser }) {
           {/* פרטים */}
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-2">
-              <span className={cn("text-xs font-medium px-2.5 py-1 rounded-full border", STATUS_STYLES[gap.status])}>
+              <span className={cn("flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border", STATUS_STYLES[gap.status])}>
+                <span className={cn("w-2 h-2 rounded-full", STATUS_DOT[gap.status])} />
                 {gap.status}
               </span>
-              <span className={cn("text-xs font-semibold px-2.5 py-1 rounded-full", PRIORITY_STYLES[gap.priority])}>
+              <span className={cn("flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full", PRIORITY_STYLES[gap.priority])}>
+                <span className={cn("w-2 h-2 rounded-full", PRIORITY_DOT[gap.priority])} />
                 {gap.priority}
               </span>
             </div>
             <p className="text-sm font-medium leading-relaxed">{gap.gap}</p>
             <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1"><Building2 className="w-3.5 h-3.5" />{gap.company}</span>
+              <span className={cn("flex items-center gap-1.5 px-2 py-0.5 rounded-full font-medium w-fit", PLUGA_COLORS[gap.company]?.light || "bg-muted")}>
+                <span className={cn("w-2 h-2 rounded-full", PLUGA_COLORS[gap.company]?.dot)} />
+                {gap.company}
+              </span>
               {gap.location && (
                 <span className="flex items-center gap-1">
                   <MapPin className="w-3.5 h-3.5" />
