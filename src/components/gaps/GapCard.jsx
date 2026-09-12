@@ -1,37 +1,19 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, MapPin, Building2, Clock, CalendarPlus } from "lucide-react";
+import { Pencil, Trash2, MapPin, Building2, Clock, CalendarPlus, Phone, Wrench, History } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  STATUS_STYLES,
+  PRIORITY_STYLES,
+  daysSince,
+  formatShortDate,
+  formatDateTime,
+} from "@/components/gaps/gapHelpers";
+import GapDetailsModal from "@/components/gaps/GapDetailsModal";
 
-const STATUS_STYLES = {
-  "טרם הועלה": "bg-amber-100 text-amber-800 border-amber-200",
-  "בטיפול": "bg-blue-100 text-blue-800 border-blue-200",
-  "טופל": "bg-emerald-100 text-emerald-800 border-emerald-200",
-};
-
-const PRIORITY_STYLES = {
-  "נמוך": "bg-slate-100 text-slate-600",
-  "בינוני": "bg-sky-100 text-sky-700",
-  "גבוה": "bg-orange-100 text-orange-700",
-  "קריטי": "bg-red-100 text-red-700 ring-1 ring-red-200",
-};
-
-const PRIORITY_RANK = { "קריטי": 4, "גבוה": 3, "בינוני": 2, "נמוך": 1 };
-
-function formatShortDate(dateStr) {
-  if (!dateStr) return "";
-  const d = new Date(dateStr);
-  return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
-}
-
-function daysSince(dateStr) {
-  if (!dateStr) return null;
-  const diff = Date.now() - new Date(dateStr).getTime();
-  return Math.floor(diff / (1000 * 60 * 60 * 24));
-}
-
-export default function GapCard({ gap, onEdit, onDelete, onStatusChange, staleDays = 7 }) {
+export default function GapCard({ gap, onEdit, onDelete, onStatusChange, staleDays = 7, latestUpdate, currentUser }) {
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const days = daysSince(gap.updated_date);
   const isStale = days != null && days >= staleDays && gap.status !== "טופל";
 
@@ -59,10 +41,13 @@ export default function GapCard({ gap, onEdit, onDelete, onStatusChange, staleDa
           )}
         </div>
         <div className="flex items-center gap-1 shrink-0">
-          <Button size="icon" variant="ghost" onClick={() => onEdit(gap)} className="h-8 w-8">
+          <Button size="icon" variant="ghost" onClick={() => setDetailsOpen(true)} className="h-8 w-8" title="פרטים והיסטוריית שינויים">
+            <History className="w-4 h-4" />
+          </Button>
+          <Button size="icon" variant="ghost" onClick={() => onEdit(gap)} className="h-8 w-8" title="עריכת הפער">
             <Pencil className="w-4 h-4" />
           </Button>
-          <Button size="icon" variant="ghost" onClick={() => onDelete(gap)} className="h-8 w-8 text-destructive hover:text-destructive">
+          <Button size="icon" variant="ghost" onClick={() => onDelete(gap)} className="h-8 w-8 text-destructive hover:text-destructive" title="מחיקת הפער">
             <Trash2 className="w-4 h-4" />
           </Button>
         </div>
@@ -81,18 +66,55 @@ export default function GapCard({ gap, onEdit, onDelete, onStatusChange, staleDa
           <span className="flex items-center gap-1">
             <MapPin className="w-3.5 h-3.5" />
             {gap.location}
+            {(gap.building || gap.room_number) && (
+              <span>
+                {" "}({gap.building}{gap.building && gap.room_number ? " / " : ""}{gap.room_number ? `חדר ${gap.room_number}` : ""})
+              </span>
+            )}
           </span>
         )}
-        {gap.created_date && (
+        {gap.opened_at && (
           <span className="flex items-center gap-1">
             <CalendarPlus className="w-3.5 h-3.5" />
-            נפתח {formatShortDate(gap.created_date)}
+            נפתח {formatShortDate(gap.opened_at)}
+          </span>
+        )}
+        {gap.updated_date && (
+          <span className="flex items-center gap-1">
+            <Clock className="w-3.5 h-3.5" />
+            עודכן {formatDateTime(gap.updated_date)}
           </span>
         )}
       </div>
 
+      {(gap.opened_by_name || gap.opened_by_phone) && (
+        <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+          {gap.opened_by_name && <span>נפתח ע״י: {gap.opened_by_name}</span>}
+          {gap.opened_by_phone && (
+            <a
+              href={`tel:${gap.opened_by_phone}`}
+              className="flex items-center gap-1 text-sky-700 hover:underline"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Phone className="w-3.5 h-3.5" />
+              {gap.opened_by_phone}
+            </a>
+          )}
+        </div>
+      )}
+
       {gap.note && (
         <p className="text-xs text-muted-foreground bg-muted/60 rounded-md p-2 leading-relaxed">{gap.note}</p>
+      )}
+
+      {latestUpdate && (
+        <button
+          onClick={() => setDetailsOpen(true)}
+          className="flex items-start gap-2 text-xs text-slate-700 bg-slate-50 border border-slate-200 rounded-md p-2 text-right hover:bg-slate-100 transition-colors"
+        >
+          <Wrench className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+          <span className="leading-relaxed">{latestUpdate.message}</span>
+        </button>
       )}
 
       <div className="flex items-center gap-2 pt-1 border-t border-border/60">
@@ -112,8 +134,15 @@ export default function GapCard({ gap, onEdit, onDelete, onStatusChange, staleDa
           </button>
         ))}
       </div>
+
+      <GapDetailsModal
+        gap={gap}
+        open={detailsOpen}
+        onClose={() => setDetailsOpen(false)}
+        currentUser={currentUser}
+      />
     </Card>
   );
 }
 
-export { PRIORITY_RANK, daysSince };
+export { PRIORITY_RANK, daysSince } from "@/components/gaps/gapHelpers";

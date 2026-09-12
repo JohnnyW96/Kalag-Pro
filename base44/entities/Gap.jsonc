@@ -5,74 +5,102 @@
     "company": {
       "type": "string",
       "enum": [
-        "\u05e4\u05d0\u05e8\u05df",
-        "\u05d1\u05e9\u05d5\u05e8",
-        "\u05e6\u05d9\u05df",
-        "\u05e8\u05de\u05d5\u05df",
-        "\u05ea\u05de\u05e8"
+        "פארן",
+        "בשור",
+        "צין",
+        "רמון",
+        "תמר"
       ],
-      "title": "\u05e4\u05dc\u05d5\u05d2\u05d4",
-      "description": "\u05d4\u05e4\u05dc\u05d5\u05d2\u05d4 \u05d4\u05d0\u05d7\u05e8\u05d0\u05d9\u05ea \u05dc\u05e4\u05e2\u05e8"
+      "title": "פלוגה",
+      "description": "הפלוגה האחראית לפער"
     },
     "gap": {
       "type": "string",
-      "title": "\u05ea\u05d9\u05d0\u05d5\u05e8 \u05d4\u05e4\u05e2\u05e8",
-      "description": "\u05ea\u05d9\u05d0\u05d5\u05e8 \u05d4\u05dc\u05d9\u05e7\u05d5\u05d9 \u05d0\u05d5 \u05d4\u05de\u05e9\u05d9\u05de\u05d4"
+      "title": "תיאור הפער",
+      "description": "תיאור הליקוי או המשימה"
     },
     "location": {
       "type": "string",
       "enum": [
-        "\u05de\u05d2\u05d5\u05e8\u05d9 \u05d1\u05e0\u05d9\u05dd",
-        "\u05de\u05d2\u05d5\u05e8\u05d9 \u05d1\u05e0\u05d5\u05ea",
-        "\u05e1\u05e4\u05e1\u05dc\u05d9\u05dd",
-        "\u05e9\u05d5\u05dc\u05d7\u05e0\u05d5\u05ea \u05e1\u05e4\u05e8\u05d9\u05d9\u05d4",
-        "\u05e4\u05d9\u05e0\u05ea \u05e4\u05e8\u05d9\u05e1\u05d4",
-        "\u05e4\u05d9\u05e0\u05ea \u05e7\u05e7\u05e1",
-        "\u05e9\u05d1\u05d9\u05dc",
-        "\u05e4\u05d9\u05e0\u05ea \u05e2\u05d9\u05e9\u05d5\u05df",
-        "\u05db\u05e0\u05d9\u05e1\u05d4 \u05dc\u05de\u05d2\u05d5\u05e8\u05d9 \u05d1\u05e0\u05d9\u05dd",
-        "\u05db\u05e0\u05d9\u05e1\u05d4 \u05dc\u05de\u05d2\u05d5\u05e8\u05d9 \u05d1\u05e0\u05d5\u05ea",
-        "\u05e8\u05d7\u05d1\u05ea \u05e8\u05de\u05d5\u05df",
-        "\u05e4\u05d9\u05e0\u05ea \u05d9\u05e9\u05d9\u05d1\u05d4 \u05de\u05d0\u05d7\u05d5\u05e8\u05d9 \u05d4\u05e7\u05de\u05e0\u05d9\u05dd",
-        "\u05d3\u05e7\u05e6\u05d5",
-        "\u05d0\u05d9\u05d6\u05d5\u05e8 \u05e9\u05e7\u05dd",
-        "\u05de\u05ea\u05d7\u05dd \u05e7\u05de\u05e0\u05d9\u05dd \u05d7\u05d9\u05e6\u05d5\u05e0\u05d9",
-        "\u05e9\u05d1\u05d9\u05dc\u05d9\u05dd \u05de\u05e7\u05d9\u05e4\u05d9 \u05de\u05ea\u05d7\u05dd \u05e7\u05de\u05e0\u05d9\u05dd",
-        "\u05e9\u05d1\u05d9\u05dc \u05e6\u05de\u05d5\u05d3 \u05dc\u05de\u05d3\u05e8\u05db\u05d4",
-        "\u05d3\u05e9\u05d0 \u05db\u05e0\u05d9\u05e1\u05d4 \u05dc\u05de\u05ea\u05d7\u05dd",
-        "\u05e4\u05d9\u05e0\u05ea \u05d2\u05dc\u05d7\u05e6"
+        "מגורי בנים",
+        "מגורי בנות",
+        "כיתות",
+        "ספסלים",
+        "שולחנות ספרייה",
+        "פינת פריסה",
+        "פינת קקס",
+        "שביל",
+        "פינת עישון",
+        "כניסה למגורי בנים",
+        "כניסה למגורי בנות",
+        "רחבת רמון",
+        "פינת ישיבה מאחורי הקמנים",
+        "דקצו",
+        "איזור שקם",
+        "מתחם קמנים חיצוני",
+        "שבילים מקיפי מתחם קמנים",
+        "שביל צמוד למדרכה",
+        "דשא כניסה למתחם",
+        "פינת גלחצ"
       ],
-      "title": "\u05de\u05d9\u05e7\u05d5\u05dd",
-      "description": "\u05de\u05d9\u05e7\u05d5\u05dd \u05d4\u05e4\u05e2\u05e8 \u05d1\u05e4\u05e8\u05d5\u05d9\u05e7\u05d8"
+      "title": "מיקום",
+      "description": "מיקום הפער בפרויקט"
+    },
+    "building": {
+      "type": "string",
+      "title": "מבנה",
+      "description": "מבנה (למגורים/כיתות בלבד)"
+    },
+    "room_number": {
+      "type": "string",
+      "title": "מספר חדר",
+      "description": "מספר חדר (למגורים/כיתות בלבד)"
     },
     "status": {
       "type": "string",
       "enum": [
-        "\u05d8\u05e8\u05dd \u05d4\u05d5\u05e2\u05dc\u05d4",
-        "\u05d1\u05d8\u05d9\u05e4\u05d5\u05dc",
-        "\u05d8\u05d5\u05e4\u05dc"
+        "טרם הועלה",
+        "בטיפול",
+        "טופל"
       ],
-      "default": "\u05d8\u05e8\u05dd \u05d4\u05d5\u05e2\u05dc\u05d4",
-      "title": "\u05e1\u05d8\u05d8\u05d5\u05e1"
+      "default": "טרם הועלה",
+      "title": "סטטוס"
     },
     "priority": {
       "type": "string",
       "enum": [
-        "\u05e0\u05de\u05d5\u05da",
-        "\u05d1\u05d9\u05e0\u05d5\u05e0\u05d9",
-        "\u05d2\u05d1\u05d5\u05d4",
-        "\u05e7\u05e8\u05d9\u05d8\u05d9"
+        "נמוך",
+        "בינוני",
+        "גבוה",
+        "קריטי"
       ],
-      "default": "\u05d1\u05d9\u05e0\u05d5\u05e0\u05d9",
-      "title": "\u05e2\u05d3\u05d9\u05e4\u05d5\u05ea \u05d7\u05e9\u05d9\u05d1\u05d5\u05ea"
+      "default": "בינוני",
+      "title": "עדיפות חשיבות"
+    },
+    "opened_at": {
+      "type": "string",
+      "format": "date",
+      "title": "תאריך פתיחה"
+    },
+    "opened_by_name": {
+      "type": "string",
+      "title": "שם הפותח",
+      "description": "שם מי שפתח את הפער"
+    },
+    "opened_by_phone": {
+      "type": "string",
+      "title": "טלפון הפותח",
+      "description": "מספר טלפון של מי שפתח את הפער"
     },
     "note": {
       "type": "string",
-      "title": "\u05d4\u05e2\u05e8\u05d5\u05ea"
+      "title": "הערות"
     }
   },
   "required": [
     "company",
-    "gap"
+    "gap",
+    "opened_by_name",
+    "opened_by_phone"
   ]
 }
