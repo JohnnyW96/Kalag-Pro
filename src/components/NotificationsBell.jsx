@@ -3,7 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { Bell, MessageSquare, Repeat, Loader2, Inbox, Check, CheckCheck } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { base44 } from "@/api/base44Client";
-import { formatDateTime } from "@/components/gaps/gapHelpers";
+import { PLUGA_COLORS } from "@/lib/constants";
+import {
+  formatDateTime,
+  STATUS_STYLES,
+  STATUS_DOT,
+  PRIORITY_STYLES,
+  PRIORITY_DOT,
+} from "@/components/gaps/gapHelpers";
 import { cn } from "@/lib/utils";
 
 const READ_IDS_KEY = "kalag_notifications_read_ids";
@@ -216,21 +223,42 @@ export default function NotificationsBell() {
                       <p className="text-sm leading-relaxed">
                         {isUnread && <span className="inline-block w-1.5 h-1.5 rounded-full bg-sky-500 ml-1.5 align-middle" />}
                         <span className="font-medium">{item.actor || "מישהו"}</span>
-                        {item.type === "update" ? " הוסיף עדכון" : (
-                          <>
-                            {" "}שינה סטטוס ל<span className="font-medium">{item.new_value}</span>
-                          </>
-                        )}
+                        {item.type === "update" ? " הוסיף עדכון" : " שינה סטטוס"}
                         {gap && (
                           <>
                             {" "}בפער "<span className="font-medium">{gap.gap}</span>"
                           </>
                         )}
                       </p>
+
+                      {item.type === "status" && (
+                        <div className="flex items-center gap-1.5 mt-1.5">
+                          <span className="text-[11px] text-muted-foreground">לסטטוס:</span>
+                          <span className={cn("flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border", STATUS_STYLES[item.new_value])}>
+                            <span className={cn("w-1.5 h-1.5 rounded-full", STATUS_DOT[item.new_value])} />
+                            {item.new_value}
+                          </span>
+                        </div>
+                      )}
+
                       {item.type === "update" && item.message && (
                         <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{item.message}</p>
                       )}
-                      <p className="text-[11px] text-muted-foreground mt-1">{formatDateTime(item.created_date)}</p>
+
+                      {gap && (
+                        <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                          <span className={cn("flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full", PLUGA_COLORS[gap.company]?.light || "bg-muted")}>
+                            <span className={cn("w-1.5 h-1.5 rounded-full", PLUGA_COLORS[gap.company]?.dot)} />
+                            {gap.company}
+                          </span>
+                          <span className={cn("flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full", PRIORITY_STYLES[gap.priority])}>
+                            <span className={cn("w-1.5 h-1.5 rounded-full", PRIORITY_DOT[gap.priority])} />
+                            {gap.priority}
+                          </span>
+                        </div>
+                      )}
+
+                      <p className="text-[11px] text-muted-foreground mt-1.5">{formatDateTime(item.created_date)}</p>
                     </div>
                   </button>
                   {isUnread && (
