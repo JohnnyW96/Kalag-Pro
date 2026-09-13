@@ -1,0 +1,42 @@
+{
+  "name": "GapChange",
+  "type": "object",
+  "properties": {
+    "gap_id": {
+      "type": "string",
+      "title": "מזהה פער"
+    },
+    "change_type": {
+      "type": "string",
+      "enum": [
+        "create",
+        "update"
+      ],
+      "default": "update",
+      "title": "סוג שינוי"
+    },
+    "field": {
+      "type": "string",
+      "title": "שם השדה שהשתנה"
+    },
+    "field_label": {
+      "type": "string",
+      "title": "תווית השדה (בעברית)"
+    },
+    "old_value": {
+      "type": "string",
+      "title": "ערך קודם"
+    },
+    "new_value": {
+      "type": "string",
+      "title": "ערך חדש"
+    },
+    "changed_by": {
+      "type": "string",
+      "title": "בוצע על ידי"
+    }
+  },
+  "required": [
+    "gap_id"
+  ]
+}

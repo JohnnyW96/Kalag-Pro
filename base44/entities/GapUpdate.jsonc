@@ -1,0 +1,22 @@
+{
+  "name": "GapUpdate",
+  "type": "object",
+  "properties": {
+    "gap_id": {
+      "type": "string",
+      "title": "מזהה פער"
+    },
+    "message": {
+      "type": "string",
+      "title": "עדכון חופשי"
+    },
+    "created_by": {
+      "type": "string",
+      "title": "נכתב על ידי"
+    }
+  },
+  "required": [
+    "gap_id",
+    "message"
+  ]
+}

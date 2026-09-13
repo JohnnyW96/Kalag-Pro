@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom";
 import TopNav from "./TopNav";
 import AdminPanel from "./AdminPanel";
+import NotificationsBell from "./NotificationsBell";
 
 const LOGO_URL = "https://media.base44.com/images/public/6aa1c4c872f2848a151a92bf/98fcd8299_image.png";
 const CHARACTER_URL = "https://media.base44.com/images/public/6aa1c4c872f2848a151a92bf/89a22bb0d_image.png";
@@ -21,6 +22,7 @@ export default function AppLayout() {
               <h1 className="text-xl font-bold tracking-tight">ראשית הצירים</h1>
               <div className="flex items-center gap-2">
                 <img src={CHARACTER_URL} alt="" className="h-10 w-10 object-contain" />
+                <NotificationsBell />
                 <AdminPanel />
               </div>
             </div>

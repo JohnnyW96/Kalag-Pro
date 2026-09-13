@@ -4,7 +4,7 @@
   "properties": {
     "summary_date": {
       "type": "string",
-      "title": "\u05ea\u05d0\u05e8\u05d9\u05da"
+      "title": "תאריך"
     },
     "entries": {
       "type": "array",
@@ -16,10 +16,29 @@
           },
           "notes": {
             "type": "string"
+          },
+          "pluga": {
+            "type": "string",
+            "enum": [
+              "פארן",
+              "בשור",
+              "צין",
+              "רמון",
+              "תמר"
+            ],
+            "title": "פלוגה רלוונטית"
+          },
+          "building": {
+            "type": "string",
+            "title": "מבנה"
+          },
+          "room_number": {
+            "type": "string",
+            "title": "מספר חדר"
           }
         }
       },
-      "title": "\u05e4\u05e8\u05d8\u05d9 \u05d4\u05e1\u05d9\u05db\u05d5\u05dd"
+      "title": "פרטי הסיכום"
     }
   },
   "required": [

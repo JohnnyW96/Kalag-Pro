@@ -3,6 +3,7 @@ export const PLUGOT = ["פארן", "בשור", "צין", "רמון", "תמר"];
 export const LOCATIONS = [
   "מגורי בנים",
   "מגורי בנות",
+  "כיתות",
   "ספסלים",
   "שולחנות ספרייה",
   "פינת פריסה",
@@ -22,10 +23,13 @@ export const LOCATIONS = [
   "פינת גלחצ",
 ];
 
+// מיקומים שבהם מבקשים גם מבנה ומספר חדר (מגורים/כיתות)
+export const DORM_LOCATIONS = ["מגורי בנים", "מגורי בנות", "כיתות"];
+
 export const PLUGA_COLORS = {
   "פארן": { bg: "bg-blue-500", text: "text-white", light: "bg-blue-100", border: "border-blue-400", dot: "bg-blue-500" },
-  "בשור": { bg: "bg-emerald-500", text: "text-white", light: "bg-emerald-100", border: "border-emerald-400", dot: "bg-emerald-500" },
-  "צין": { bg: "bg-slate-900", text: "text-white", light: "bg-slate-200", border: "border-slate-600", dot: "bg-slate-900" },
+  "בשור": { bg: "bg-green-500", text: "text-white", light: "bg-green-100", border: "border-green-400", dot: "bg-green-500" },
+  "צין": { bg: "bg-black", text: "text-white", light: "bg-gray-200", border: "border-neutral-700", dot: "bg-black" },
   "רמון": { bg: "bg-red-500", text: "text-white", light: "bg-red-100", border: "border-red-400", dot: "bg-red-500" },
   "תמר": { bg: "bg-yellow-400", text: "text-slate-900", light: "bg-yellow-100", border: "border-yellow-400", dot: "bg-yellow-400" },
 };

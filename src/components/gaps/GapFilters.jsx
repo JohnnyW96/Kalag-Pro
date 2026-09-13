@@ -3,9 +3,12 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, SlidersHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PLUGA_COLORS } from "@/lib/constants";
+import { STATUSES, PRIORITIES, STATUS_DOT, PRIORITY_DOT, STATUS_SELECTED_STYLES, PRIORITY_SELECTED_STYLES } from "@/components/gaps/gapHelpers";
 
-const STATUSES = ["טרם הועלה", "בטיפול", "טופל"];
-const PRIORITIES = ["נמוך", "בינוני", "גבוה", "קריטי"];
+function Dot({ className }) {
+  return <span className={cn("inline-block w-2 h-2 rounded-full shrink-0", className)} />;
+}
 
 export default function GapFilters({
   search,
@@ -32,9 +35,9 @@ export default function GapFilters({
   };
 
   return (
-    <div dir="rtl" className="flex flex-col gap-3">
+    <div dir="rtl" className="flex flex-col gap-3 flex-1 min-w-0 w-full">
       <div className="flex flex-col md:flex-row gap-3">
-        <div className="relative flex-1">
+        <div className="relative flex-1 min-w-0">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             value={search}
@@ -44,16 +47,21 @@ export default function GapFilters({
           />
         </div>
         <Select value={companyFilter} onValueChange={setCompanyFilter}>
-          <SelectTrigger className="md:w-[170px]"><SelectValue placeholder="פלוגה" /></SelectTrigger>
+          <SelectTrigger className="md:w-[170px] shrink-0"><SelectValue placeholder="פלוגה" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">כל הפלוגות</SelectItem>
             {companies.map((c) => (
-              <SelectItem key={c} value={c}>{c}</SelectItem>
+              <SelectItem key={c} value={c}>
+                <span className="flex items-center gap-2">
+                  <Dot className={PLUGA_COLORS[c]?.dot} />
+                  {c}
+                </span>
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
         <Select value={sort} onValueChange={setSort}>
-          <SelectTrigger className="md:w-[200px]">
+          <SelectTrigger className="md:w-[200px] shrink-0">
             <SlidersHorizontal className="w-4 h-4 ml-1" />
             <SelectValue placeholder="מיון" />
           </SelectTrigger>
@@ -68,20 +76,22 @@ export default function GapFilters({
 
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-sm text-muted-foreground">סטטוס:</span>
-        {STATUSES.map((s) => (
-          <button
-            key={s}
-            onClick={() => toggleStatus(s)}
-            className={cn(
-              "text-xs px-3 py-1.5 rounded-full border transition-colors",
-              statusFilters.includes(s)
-                ? "bg-slate-900 text-white border-slate-900"
-                : "bg-white text-muted-foreground border-border hover:bg-muted"
-            )}
-          >
-            {s}
-          </button>
-        ))}
+        {STATUSES.map((s) => {
+          const active = statusFilters.includes(s);
+          return (
+            <button
+              key={s}
+              onClick={() => toggleStatus(s)}
+              className={cn(
+                "text-xs px-3 py-1.5 rounded-full border transition-colors flex items-center gap-1.5",
+                active ? STATUS_SELECTED_STYLES[s] : "bg-white text-muted-foreground border-border hover:bg-muted"
+              )}
+            >
+              <Dot className={active ? "bg-white/90" : STATUS_DOT[s]} />
+              {s}
+            </button>
+          );
+        })}
         {statusFilters.length > 0 && (
           <button onClick={() => setStatusFilters([])} className="text-xs text-muted-foreground hover:text-foreground underline">
             נקה
@@ -91,20 +101,22 @@ export default function GapFilters({
 
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-sm text-muted-foreground">עדיפות:</span>
-        {PRIORITIES.map((p) => (
-          <button
-            key={p}
-            onClick={() => togglePriority(p)}
-            className={cn(
-              "text-xs px-3 py-1.5 rounded-full border transition-colors",
-              priorityFilters.includes(p)
-                ? "bg-slate-900 text-white border-slate-900"
-                : "bg-white text-muted-foreground border-border hover:bg-muted"
-            )}
-          >
-            {p}
-          </button>
-        ))}
+        {PRIORITIES.map((p) => {
+          const active = priorityFilters.includes(p);
+          return (
+            <button
+              key={p}
+              onClick={() => togglePriority(p)}
+              className={cn(
+                "text-xs px-3 py-1.5 rounded-full border transition-colors flex items-center gap-1.5",
+                active ? PRIORITY_SELECTED_STYLES[p] : "bg-white text-muted-foreground border-border hover:bg-muted"
+              )}
+            >
+              <Dot className={active ? "bg-white/90" : PRIORITY_DOT[p]} />
+              {p}
+            </button>
+          );
+        })}
         {priorityFilters.length > 0 && (
           <button onClick={() => setPriorityFilters([])} className="text-xs text-muted-foreground hover:text-foreground underline">
             נקה

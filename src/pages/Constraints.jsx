@@ -37,6 +37,34 @@ function getDateOnly(dateStr) {
   return String(dateStr).split("T")[0];
 }
 
+function Dot({ className }) {
+  return <span className={cn("inline-block w-2 h-2 rounded-full shrink-0", className || "bg-slate-300")} />;
+}
+
+function PlugaInline({ pluga }) {
+  if (!pluga) return <span className="text-muted-foreground">טרם הוחלט</span>;
+  return (
+    <span className="inline-flex items-center gap-1.5 font-medium">
+      <Dot className={PLUGA_COLORS[pluga]?.dot} />
+      {pluga}
+    </span>
+  );
+}
+
+// הפלוגות הרלוונטיות לאירוע, לצורך נקודות צבע על הבלוק בלוח
+function eventPlugot(e) {
+  if (e.event_type === "חיצוני") {
+    return [e.transport_pluga, e.food_pluga].filter(Boolean);
+  }
+  return e.responsible_plugas || [];
+}
+
+// הפלוגות המשתתפות באילוץ - תומך גם באילוצים ישנים עם שדה pluga יחיד
+function constraintPlugot(c) {
+  if (c.plugas && c.plugas.length) return c.plugas;
+  return c.pluga ? [c.pluga] : [];
+}
+
 export default function Constraints() {
   const [weekStart, setWeekStart] = useState(() => getWeekStart(new Date()));
   const [constraints, setConstraints] = useState([]);
@@ -51,7 +79,7 @@ export default function Constraints() {
   const [viewEvent, setViewEvent] = useState(null);
 
   const [form, setForm] = useState({
-    pluga: "",
+    plugas: [],
     constraint_date: toDateStr(new Date()),
     start_time: "08:00",
     end_time: "10:00",
@@ -59,10 +87,21 @@ export default function Constraints() {
     details: "",
   });
 
+  const toggleFormPluga = (p) => {
+    setForm((prev) => ({
+      ...prev,
+      plugas: prev.plugas.includes(p)
+        ? prev.plugas.filter((x) => x !== p)
+        : [...prev.plugas, p],
+    }));
+  };
+
+  // הימים בנויים בסדר הפוך (שבת -> ראשון) כדי שבתצוגת RTL הרגילה (העמודה
+  // הראשונה מוצגת בצד ימין) ראשון ייצא בצד שמאל ושבת בצד ימין, כפי שהתבקש.
   const days = useMemo(() => {
     return Array.from({ length: 7 }, (_, i) => {
       const d = new Date(weekStart);
-      d.setDate(d.getDate() + i);
+      d.setDate(d.getDate() + (6 - i));
       return d;
     });
   }, [weekStart]);
@@ -120,17 +159,19 @@ export default function Constraints() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.pluga || !form.title || !form.start_time || !form.end_time) return;
+    if (form.plugas.length === 0 || !form.title || !form.start_time || !form.end_time) return;
     setSaving(true);
     try {
+      // pluga נשמר גם הוא (הפלוגה הראשונה) לצורך תאימות לאחור עם קוד/דוחות ישנים שמצפים לשדה יחיד
+      const payload = { ...form, pluga: form.plugas[0] };
       if (editing) {
-        await base44.entities.Constraint.update(editing.id, form);
+        await base44.entities.Constraint.update(editing.id, payload);
         setEditing(null);
       } else {
-        await base44.entities.Constraint.create(form);
+        await base44.entities.Constraint.create(payload);
       }
       setFormOpen(false);
-      setForm({ pluga: "", constraint_date: toDateStr(new Date()), start_time: "08:00", end_time: "10:00", title: "", details: "" });
+      setForm({ plugas: [], constraint_date: toDateStr(new Date()), start_time: "08:00", end_time: "10:00", title: "", details: "" });
       await loadConstraints();
     } finally {
       setSaving(false);
@@ -141,7 +182,7 @@ export default function Constraints() {
     setViewConstraint(null);
     setEditing(c);
     setForm({
-      pluga: c.pluga || "",
+      plugas: constraintPlugot(c),
       constraint_date: getDateOnly(c.constraint_date) || toDateStr(new Date()),
       start_time: c.start_time || "08:00",
       end_time: c.end_time || "10:00",
@@ -185,7 +226,7 @@ export default function Constraints() {
         <div className="flex gap-2">
           <Button onClick={() => {
             setEditing(null);
-            setForm({ pluga: "", constraint_date: toDateStr(new Date()), start_time: "08:00", end_time: "10:00", title: "", details: "" });
+            setForm({ plugas: [], constraint_date: toDateStr(new Date()), start_time: "08:00", end_time: "10:00", title: "", details: "" });
             setFormOpen(true);
           }} className="gap-2">
             <Plus className="w-4 h-4" />
@@ -209,7 +250,7 @@ export default function Constraints() {
           <Button variant="ghost" onClick={goToday} className="text-sm">היום</Button>
         </div>
         <p className="text-sm font-medium">
-          {days[0].getDate()}/{days[0].getMonth() + 1} - {days[6].getDate()}/{days[6].getMonth() + 1}
+          {days[6].getDate()}/{days[6].getMonth() + 1} - {days[0].getDate()}/{days[0].getMonth() + 1}
         </p>
       </div>
 
@@ -231,7 +272,7 @@ export default function Constraints() {
           <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
         </div>
       ) : (
-        <div className="overflow-x-auto bg-white rounded-xl border border-border">
+        <div className="overflow-x-auto bg-white rounded-xl border border-border" dir="rtl">
           <div className="min-w-[700px]">
             <div className="flex border-b border-border bg-slate-50">
               <div className="w-14 shrink-0"></div>
@@ -285,19 +326,32 @@ export default function Constraints() {
                       const height = isCrossMidnight
                         ? Math.max(totalHeight - top, 40)
                         : Math.max(timeToPx(c.end_time) - top, 20);
-                      const colors = PLUGA_COLORS[c.pluga] || PLUGA_COLORS[PLUGOT[0]];
+                      const plugot = constraintPlugot(c);
+                      const singlePluga = plugot.length === 1;
+                      const colors = singlePluga ? (PLUGA_COLORS[plugot[0]] || PLUGA_COLORS[PLUGOT[0]]) : null;
                       return (
                         <div
                           key={c.id}
                           onClick={() => setViewConstraint(c)}
                           className={cn(
                             "absolute rounded-md p-1.5 text-xs overflow-hidden shadow-sm cursor-pointer hover:opacity-90 transition-opacity",
-                            colors.bg,
-                            colors.text
+                            singlePluga ? colors.bg : EVENT_COLORS.bg,
+                            singlePluga ? colors.text : EVENT_COLORS.text
                           )}
                           style={{ top, height, right: 1, left: 1 }}
                         >
-                          <p className="opacity-75 text-[10px] font-medium">{c.pluga}</p>
+                          <div className="flex items-center justify-between gap-1">
+                            <p className="opacity-75 text-[10px] font-medium truncate">
+                              {singlePluga ? plugot[0] : plugot.length > 0 ? plugot.join(", ") : "טרם הוחלט"}
+                            </p>
+                            {!singlePluga && plugot.length > 0 && (
+                              <div className="flex items-center gap-0.5 shrink-0">
+                                {plugot.map((p) => (
+                                  <span key={p} className={cn("w-2 h-2 rounded-full", PLUGA_COLORS[p]?.dot)} title={p} />
+                                ))}
+                              </div>
+                            )}
+                          </div>
                           <p className="font-semibold truncate">{c.title}</p>
                           <p className="opacity-80 text-[10px]">{c.start_time} - {c.end_time}</p>
                           {height > 60 && c.details && (
@@ -312,6 +366,7 @@ export default function Constraints() {
                       const height = isCrossMidnight
                         ? Math.max(totalHeight - top, 40)
                         : Math.max(timeToPx(e.end_time) - top, 20);
+                      const plugot = eventPlugot(e);
                       return (
                         <div
                           key={e.id}
@@ -323,7 +378,16 @@ export default function Constraints() {
                           )}
                           style={{ top, height, right: 1, left: 1 }}
                         >
-                          <p className="opacity-75 text-[10px] font-medium">{e.event_type}</p>
+                          <div className="flex items-center justify-between gap-1">
+                            <p className="opacity-75 text-[10px] font-medium">{e.event_type}</p>
+                            {plugot.length > 0 && (
+                              <div className="flex items-center gap-0.5 shrink-0">
+                                {plugot.map((p) => (
+                                  <span key={p} className={cn("w-2 h-2 rounded-full", PLUGA_COLORS[p]?.dot)} title={p} />
+                                ))}
+                              </div>
+                            )}
+                          </div>
                           <p className="font-semibold truncate">{e.title}</p>
                           <p className="opacity-80 text-[10px]">{e.start_time} - {e.end_time}</p>
                         </div>
@@ -344,15 +408,29 @@ export default function Constraints() {
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label>פלוגה *</Label>
-              <Select value={form.pluga} onValueChange={(v) => setForm({ ...form, pluga: v })}>
-                <SelectTrigger><SelectValue placeholder="בחר פלוגה" /></SelectTrigger>
-                <SelectContent>
-                  {PLUGOT.map((p) => (
-                    <SelectItem key={p} value={p}>{p}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label>פלוגות משתתפות *</Label>
+              <div className="flex flex-wrap gap-2">
+                {PLUGOT.map((p) => {
+                  const selected = form.plugas.includes(p);
+                  const color = PLUGA_COLORS[p];
+                  return (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => toggleFormPluga(p)}
+                      className={cn(
+                        "flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition-colors",
+                        selected
+                          ? `${color.bg} ${color.text} ${color.border}`
+                          : "bg-white text-muted-foreground border-border hover:bg-muted"
+                      )}
+                    >
+                      <Dot className={selected ? "bg-white/80" : color.dot} />
+                      {p}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
             <div className="space-y-2">
               <Label>תאריך *</Label>
@@ -416,9 +494,20 @@ export default function Constraints() {
           </DialogHeader>
           {viewConstraint && (
             <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <div className={cn("w-4 h-4 rounded", (PLUGA_COLORS[viewConstraint.pluga] || {}).bg)} />
-                <span className="font-medium">{viewConstraint.pluga}</span>
+              <div>
+                <p className="text-xs text-muted-foreground mb-1.5">פלוגות משתתפות</p>
+                {constraintPlugot(viewConstraint).length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {constraintPlugot(viewConstraint).map((p) => (
+                      <span key={p} className={cn("flex items-center gap-1.5 text-xs px-2 py-1 rounded-full font-medium", PLUGA_COLORS[p]?.light || "bg-muted")}>
+                        <Dot className={PLUGA_COLORS[p]?.dot} />
+                        {p}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">טרם הוחלט</p>
+                )}
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">כותרת</p>
@@ -499,7 +588,7 @@ export default function Constraints() {
                     <p className="text-xs font-semibold text-slate-700">הסעים</p>
                     <p className="text-sm">
                       <span className="text-muted-foreground">פלוגה: </span>
-                      {viewEvent.transport_pluga || "טרם הוחלט"}
+                      <PlugaInline pluga={viewEvent.transport_pluga} />
                     </p>
                     {viewEvent.transport_details && (
                       <p className="text-sm text-muted-foreground">{viewEvent.transport_details}</p>
@@ -509,7 +598,7 @@ export default function Constraints() {
                     <p className="text-xs font-semibold text-slate-700">אוכל</p>
                     <p className="text-sm">
                       <span className="text-muted-foreground">פלוגה: </span>
-                      {viewEvent.food_pluga || "טרם הוחלט"}
+                      <PlugaInline pluga={viewEvent.food_pluga} />
                     </p>
                     {viewEvent.food_details && (
                       <p className="text-sm text-muted-foreground">{viewEvent.food_details}</p>
@@ -523,7 +612,8 @@ export default function Constraints() {
                   {viewEvent.responsible_plugas && viewEvent.responsible_plugas.length > 0 ? (
                     <div className="flex flex-wrap gap-2">
                       {viewEvent.responsible_plugas.map((p) => (
-                        <span key={p} className={cn("text-xs px-2 py-1 rounded-full", PLUGA_COLORS[p]?.light || "bg-muted")}>
+                        <span key={p} className={cn("flex items-center gap-1.5 text-xs px-2 py-1 rounded-full font-medium", PLUGA_COLORS[p]?.light || "bg-muted")}>
+                          <Dot className={PLUGA_COLORS[p]?.dot} />
                           {p}
                         </span>
                       ))}
