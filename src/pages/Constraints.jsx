@@ -96,10 +96,12 @@ export default function Constraints() {
     }));
   };
 
+  // הימים בנויים בסדר הפוך (שבת -> ראשון) כדי שבתצוגת RTL הרגילה (העמודה
+  // הראשונה מוצגת בצד ימין) ראשון ייצא בצד שמאל ושבת בצד ימין, כפי שהתבקש.
   const days = useMemo(() => {
     return Array.from({ length: 7 }, (_, i) => {
       const d = new Date(weekStart);
-      d.setDate(d.getDate() + i);
+      d.setDate(d.getDate() + (6 - i));
       return d;
     });
   }, [weekStart]);
@@ -248,7 +250,7 @@ export default function Constraints() {
           <Button variant="ghost" onClick={goToday} className="text-sm">היום</Button>
         </div>
         <p className="text-sm font-medium">
-          {days[0].getDate()}/{days[0].getMonth() + 1} - {days[6].getDate()}/{days[6].getMonth() + 1}
+          {days[6].getDate()}/{days[6].getMonth() + 1} - {days[0].getDate()}/{days[0].getMonth() + 1}
         </p>
       </div>
 
@@ -270,7 +272,7 @@ export default function Constraints() {
           <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
         </div>
       ) : (
-        <div className="overflow-x-auto bg-white rounded-xl border border-border">
+        <div className="overflow-x-auto bg-white rounded-xl border border-border" dir="rtl">
           <div className="min-w-[700px]">
             <div className="flex border-b border-border bg-slate-50">
               <div className="w-14 shrink-0"></div>
