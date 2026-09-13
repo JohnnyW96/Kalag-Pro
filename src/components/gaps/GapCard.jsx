@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, MapPin, Clock, CalendarPlus, Phone, Wrench, History } from "lucide-react";
+import { Pencil, Trash2, MapPin, Clock, CalendarPlus, Phone, Wrench, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PLUGA_COLORS } from "@/lib/constants";
 import {
@@ -47,7 +47,7 @@ export default function GapCard({ gap, onEdit, onDelete, onStatusChange, staleDa
         </div>
         <div className="flex items-center gap-1 shrink-0">
           <Button size="icon" variant="ghost" onClick={() => setDetailsOpen(true)} className="h-8 w-8" title="פרטים והיסטוריית שינויים">
-            <History className="w-4 h-4" />
+            <Info className="w-4 h-4" />
           </Button>
           <Button size="icon" variant="ghost" onClick={() => onEdit(gap)} className="h-8 w-8" title="עריכת הפער">
             <Pencil className="w-4 h-4" />

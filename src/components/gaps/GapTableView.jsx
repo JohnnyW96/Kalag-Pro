@@ -8,7 +8,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, History, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
+import { Pencil, Trash2, Info, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PLUGA_COLORS } from "@/lib/constants";
 import { STATUS_STYLES, PRIORITY_STYLES, STATUS_DOT, PRIORITY_DOT, formatShortDate, formatDateTime } from "@/components/gaps/gapHelpers";
@@ -110,7 +110,7 @@ export default function GapTableView({ gaps, sortField, sortDir, onSort, onEdit,
                 <TableCell>
                   <div className="flex items-center gap-1">
                     <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => onOpenDetails(gap)} title="פרטים">
-                      <History className="w-3.5 h-3.5" />
+                      <Info className="w-3.5 h-3.5" />
                     </Button>
                     <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => onEdit(gap)} title="עריכה">
                       <Pencil className="w-3.5 h-3.5" />

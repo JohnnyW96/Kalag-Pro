@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Plus, Loader2, HardHat, AlertTriangle, LayoutGrid, Table2, Download, ChevronRight, ChevronLeft } from "lucide-react";
@@ -59,9 +60,25 @@ export default function Home() {
 
   const [latestUpdates, setLatestUpdates] = useState({});
 
+  const [searchParams, setSearchParams] = useSearchParams();
+
   useEffect(() => {
     base44.auth.me().then(setCurrentUser).catch(() => {});
   }, []);
+
+  // הגעה מפעמון ההתראות (קישור עם ?gap=<id>) — פותח ישירות את פרטי הפער הרלוונטי
+  useEffect(() => {
+    const gapId = searchParams.get("gap");
+    if (!gapId || gaps.length === 0) return;
+    const found = gaps.find((g) => g.id === gapId);
+    if (found) {
+      setActiveTab("gaps");
+      setDetailsGap(found);
+    }
+    const next = new URLSearchParams(searchParams);
+    next.delete("gap");
+    setSearchParams(next, { replace: true });
+  }, [gaps, searchParams, setSearchParams]);
 
   const loadGaps = useCallback(async () => {
     try {
