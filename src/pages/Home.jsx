@@ -5,12 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Plus, Loader2, HardHat, AlertTriangle, LayoutGrid, Table2, Download, ChevronRight, ChevronLeft } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 import GapCard from "@/components/gaps/GapCard";
 import GapForm from "@/components/gaps/GapForm";
 import GapFilters from "@/components/gaps/GapFilters";
 import GapTableView from "@/components/gaps/GapTableView";
 import GapStats from "@/components/gaps/GapStats";
 import GapDetailsModal from "@/components/gaps/GapDetailsModal";
+import GapDetail from "@/components/gaps/GapDetail";
 import { PLUGOT } from "@/lib/constants";
 import {
   PRIORITY_RANK,
@@ -40,11 +42,15 @@ export default function Home() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [deleting, setDeleting] = useState(null);
-  const [detailsGap, setDetailsGap] = useState(null);
+  // תצוגה מהירה (ללא היסטוריה) — נפתחת בלחיצה על כרטיס
+  const [quickViewGap, setQuickViewGap] = useState(null);
+  // תצוגת פרטים מלאה + היסטוריית שינויים/עדכונים
+  const [historyGap, setHistoryGap] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
 
   const [activeTab, setActiveTab] = useState("gaps");
-  const [viewMode, setViewMode] = useState("cards");
+  const [layoutMode, setLayoutMode] = useState("cards"); // כרטיסיות / טבלה
+  const [statusView, setStatusView] = useState("active"); // פעילים / ארכיון (פערים שטופלו)
 
   const [search, setSearch] = useState("");
   const [statusFilters, setStatusFilters] = useState([]);
@@ -66,14 +72,14 @@ export default function Home() {
     base44.auth.me().then(setCurrentUser).catch(() => {});
   }, []);
 
-  // הגעה מפעמון ההתראות (קישור עם ?gap=<id>) — פותח ישירות את פרטי הפער הרלוונטי
+  // הגעה מפעמון ההתראות (קישור עם ?gap=<id>) — פותח ישירות את פרטי הפער הרלוונטי (כולל היסטוריה)
   useEffect(() => {
     const gapId = searchParams.get("gap");
     if (!gapId || gaps.length === 0) return;
     const found = gaps.find((g) => g.id === gapId);
     if (found) {
       setActiveTab("gaps");
-      setDetailsGap(found);
+      setHistoryGap(found);
     }
     const next = new URLSearchParams(searchParams);
     next.delete("gap");
@@ -117,6 +123,8 @@ export default function Home() {
 
   const filtered = useMemo(() => {
     let list = gaps.filter((g) => {
+      if (statusView === "active" && g.status === "טופל") return false;
+      if (statusView === "archive" && g.status !== "טופל") return false;
       if (statusFilters.length > 0 && !statusFilters.includes(g.status)) return false;
       if (priorityFilters.length > 0 && !priorityFilters.includes(g.priority)) return false;
       if (companyFilter !== "all" && g.company !== companyFilter) return false;
@@ -159,10 +167,10 @@ export default function Home() {
       }
     });
     return list;
-  }, [gaps, statusFilters, priorityFilters, companyFilter, staleOnly, staleDays, search, sort, columnSort]);
+  }, [gaps, statusView, statusFilters, priorityFilters, companyFilter, staleOnly, staleDays, search, sort, columnSort]);
 
   // איפוס עמוד כשמשתנים סינון/מיון
-  useEffect(() => { setPage(1); }, [statusFilters, priorityFilters, companyFilter, staleOnly, staleDays, search, sort, columnSort, perPage]);
+  useEffect(() => { setPage(1); }, [statusView, statusFilters, priorityFilters, companyFilter, staleOnly, staleDays, search, sort, columnSort, perPage]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const pageItems = useMemo(() => filtered.slice((page - 1) * perPage, page * perPage), [filtered, page, perPage]);
@@ -212,6 +220,7 @@ export default function Home() {
     await base44.entities.Gap.update(gap.id, { status });
     await logChange(gap.id, "update", "status", gap.status, status);
     await loadGaps();
+    setQuickViewGap((prev) => (prev && prev.id === gap.id ? { ...prev, status } : prev));
   };
 
   const handleDelete = async () => {
@@ -288,6 +297,28 @@ export default function Home() {
           </TabsList>
 
           <TabsContent value="gaps" className="space-y-4 mt-4">
+            {/* פעילים / ארכיון */}
+            <div className="flex items-center gap-2 bg-slate-100 rounded-lg p-1 max-w-xs">
+              <button
+                onClick={() => setStatusView("active")}
+                className={cn(
+                  "flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors",
+                  statusView === "active" ? "bg-white text-slate-900 shadow-sm" : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                פעילים
+              </button>
+              <button
+                onClick={() => setStatusView("archive")}
+                className={cn(
+                  "flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors",
+                  statusView === "archive" ? "bg-white text-slate-900 shadow-sm" : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                ארכיון
+              </button>
+            </div>
+
             <div dir="rtl" className="flex flex-col lg:flex-row lg:items-start gap-3 w-full">
               <GapFilters
                 search={search}
@@ -308,15 +339,15 @@ export default function Home() {
               />
               <div className="flex gap-1 bg-slate-100 rounded-lg p-1 shrink-0">
                 <button
-                  onClick={() => setViewMode("cards")}
-                  className={`p-2 rounded-md transition-colors ${viewMode === "cards" ? "bg-white shadow-sm" : "text-muted-foreground"}`}
+                  onClick={() => setLayoutMode("cards")}
+                  className={`p-2 rounded-md transition-colors ${layoutMode === "cards" ? "bg-white shadow-sm" : "text-muted-foreground"}`}
                   title="תצוגת כרטיסיות"
                 >
                   <LayoutGrid className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={() => setViewMode("table")}
-                  className={`p-2 rounded-md transition-colors ${viewMode === "table" ? "bg-white shadow-sm" : "text-muted-foreground"}`}
+                  onClick={() => setLayoutMode("table")}
+                  className={`p-2 rounded-md transition-colors ${layoutMode === "table" ? "bg-white shadow-sm" : "text-muted-foreground"}`}
                   title="תצוגת טבלה"
                 >
                   <Table2 className="w-4 h-4" />
@@ -330,10 +361,14 @@ export default function Home() {
               </div>
             ) : filtered.length === 0 ? (
               <div className="text-center py-20 text-muted-foreground">
-                <p className="text-lg font-medium">אין פערים להצגה</p>
-                <p className="text-sm mt-1">שנה את הסננים או הוסף פער חדש.</p>
+                <p className="text-lg font-medium">
+                  {statusView === "archive" ? "אין פערים בארכיון" : "אין פערים להצגה"}
+                </p>
+                <p className="text-sm mt-1">
+                  {statusView === "archive" ? "פערים שיטופלו יופיעו כאן." : "שנה את הסננים או הוסף פער חדש."}
+                </p>
               </div>
-            ) : viewMode === "table" ? (
+            ) : layoutMode === "table" ? (
               <GapTableView
                 gaps={pageItems}
                 sortField={columnSort?.field}
@@ -342,7 +377,7 @@ export default function Home() {
                 onEdit={openEdit}
                 onDelete={setDeleting}
                 onStatusChange={handleStatusChange}
-                onOpenDetails={setDetailsGap}
+                onOpenDetails={setHistoryGap}
               />
             ) : (
               <div dir="rtl" className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -353,9 +388,10 @@ export default function Home() {
                     onEdit={openEdit}
                     onDelete={setDeleting}
                     onStatusChange={handleStatusChange}
+                    onClick={setQuickViewGap}
+                    onShowHistory={setHistoryGap}
                     staleDays={staleDays}
                     latestUpdate={latestUpdates[gap.id]}
-                    currentUser={currentUser}
                   />
                 ))}
               </div>
@@ -401,10 +437,23 @@ export default function Home() {
         editing={editing}
       />
 
+      {/* תצוגה מהירה — נפתחת בלחיצה על כרטיס */}
+      <GapDetail
+        gap={quickViewGap}
+        open={!!quickViewGap}
+        onClose={() => setQuickViewGap(null)}
+        onEdit={(gap) => {
+          setQuickViewGap(null);
+          openEdit(gap);
+        }}
+        onStatusChange={handleStatusChange}
+      />
+
+      {/* פרטים מלאים + היסטוריית שינויים ועדכונים */}
       <GapDetailsModal
-        gap={detailsGap}
-        open={!!detailsGap}
-        onClose={() => setDetailsGap(null)}
+        gap={historyGap}
+        open={!!historyGap}
+        onClose={() => setHistoryGap(null)}
         currentUser={currentUser}
       />
 
@@ -434,6 +483,7 @@ function StatCard({ label, value, tone, icon }) {
     amber: "bg-amber-100 text-amber-700",
     blue: "bg-blue-100 text-blue-700",
     red: "bg-red-100 text-red-700",
+    emerald: "bg-emerald-100 text-emerald-700",
   };
   return (
     <div className="bg-white rounded-xl border border-border p-4 flex items-center gap-3">
