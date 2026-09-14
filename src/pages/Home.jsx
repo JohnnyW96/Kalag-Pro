@@ -3,14 +3,12 @@ import { useSearchParams } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Plus, Loader2, HardHat, AlertTriangle, LayoutGrid, Table2, Download, ChevronRight, ChevronLeft } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import GapCard from "@/components/gaps/GapCard";
 import GapForm from "@/components/gaps/GapForm";
 import GapFilters from "@/components/gaps/GapFilters";
 import GapTableView from "@/components/gaps/GapTableView";
-import GapStats from "@/components/gaps/GapStats";
 import GapDetailsModal from "@/components/gaps/GapDetailsModal";
 import GapDetail from "@/components/gaps/GapDetail";
 import { PLUGOT } from "@/lib/constants";
@@ -48,7 +46,6 @@ export default function Home() {
   const [historyGap, setHistoryGap] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
 
-  const [activeTab, setActiveTab] = useState("gaps");
   const [layoutMode, setLayoutMode] = useState("cards"); // כרטיסיות / טבלה
   const [statusView, setStatusView] = useState("active"); // פעילים / ארכיון (פערים שטופלו)
 
@@ -78,7 +75,6 @@ export default function Home() {
     if (!gapId || gaps.length === 0) return;
     const found = gaps.find((g) => g.id === gapId);
     if (found) {
-      setActiveTab("gaps");
       setHistoryGap(found);
     }
     const next = new URLSearchParams(searchParams);
@@ -290,144 +286,133 @@ export default function Home() {
           <StatCard label="לא עודכנו לאחרונה" value={stats.stale} tone="red" icon={<AlertTriangle className="w-4 h-4" />} />
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList>
-            <TabsTrigger value="gaps">פערים</TabsTrigger>
-            <TabsTrigger value="stats">סטטיסטיקות</TabsTrigger>
-          </TabsList>
+        <div className="space-y-4">
+          {/* פעילים / ארכיון */}
+          <div className="flex items-center gap-2 bg-slate-100 rounded-lg p-1 max-w-xs">
+            <button
+              onClick={() => setStatusView("active")}
+              className={cn(
+                "flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors",
+                statusView === "active" ? "bg-white text-slate-900 shadow-sm" : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              פעילים
+            </button>
+            <button
+              onClick={() => setStatusView("archive")}
+              className={cn(
+                "flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors",
+                statusView === "archive" ? "bg-white text-slate-900 shadow-sm" : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              ארכיון
+            </button>
+          </div>
 
-          <TabsContent value="gaps" className="space-y-4 mt-4">
-            {/* פעילים / ארכיון */}
-            <div className="flex items-center gap-2 bg-slate-100 rounded-lg p-1 max-w-xs">
+          <div dir="rtl" className="flex flex-col lg:flex-row lg:items-start gap-3 w-full">
+            <GapFilters
+              search={search}
+              setSearch={setSearch}
+              statusFilters={statusFilters}
+              setStatusFilters={setStatusFilters}
+              priorityFilters={priorityFilters}
+              setPriorityFilters={setPriorityFilters}
+              companyFilter={companyFilter}
+              setCompanyFilter={setCompanyFilter}
+              companies={companies}
+              sort={sort}
+              setSort={(v) => { setSort(v); setColumnSort(null); }}
+              staleOnly={staleOnly}
+              setStaleOnly={setStaleOnly}
+              staleDays={staleDays}
+              setStaleDays={setStaleDays}
+            />
+            <div className="flex gap-1 bg-slate-100 rounded-lg p-1 shrink-0">
               <button
-                onClick={() => setStatusView("active")}
-                className={cn(
-                  "flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors",
-                  statusView === "active" ? "bg-white text-slate-900 shadow-sm" : "text-muted-foreground hover:text-foreground"
-                )}
+                onClick={() => setLayoutMode("cards")}
+                className={`p-2 rounded-md transition-colors ${layoutMode === "cards" ? "bg-white shadow-sm" : "text-muted-foreground"}`}
+                title="תצוגת כרטיסיות"
               >
-                פעילים
+                <LayoutGrid className="w-4 h-4" />
               </button>
               <button
-                onClick={() => setStatusView("archive")}
-                className={cn(
-                  "flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors",
-                  statusView === "archive" ? "bg-white text-slate-900 shadow-sm" : "text-muted-foreground hover:text-foreground"
-                )}
+                onClick={() => setLayoutMode("table")}
+                className={`p-2 rounded-md transition-colors ${layoutMode === "table" ? "bg-white shadow-sm" : "text-muted-foreground"}`}
+                title="תצוגת טבלה"
               >
-                ארכיון
+                <Table2 className="w-4 h-4" />
               </button>
             </div>
+          </div>
 
-            <div dir="rtl" className="flex flex-col lg:flex-row lg:items-start gap-3 w-full">
-              <GapFilters
-                search={search}
-                setSearch={setSearch}
-                statusFilters={statusFilters}
-                setStatusFilters={setStatusFilters}
-                priorityFilters={priorityFilters}
-                setPriorityFilters={setPriorityFilters}
-                companyFilter={companyFilter}
-                setCompanyFilter={setCompanyFilter}
-                companies={companies}
-                sort={sort}
-                setSort={(v) => { setSort(v); setColumnSort(null); }}
-                staleOnly={staleOnly}
-                setStaleOnly={setStaleOnly}
-                staleDays={staleDays}
-                setStaleDays={setStaleDays}
-              />
-              <div className="flex gap-1 bg-slate-100 rounded-lg p-1 shrink-0">
-                <button
-                  onClick={() => setLayoutMode("cards")}
-                  className={`p-2 rounded-md transition-colors ${layoutMode === "cards" ? "bg-white shadow-sm" : "text-muted-foreground"}`}
-                  title="תצוגת כרטיסיות"
-                >
-                  <LayoutGrid className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setLayoutMode("table")}
-                  className={`p-2 rounded-md transition-colors ${layoutMode === "table" ? "bg-white shadow-sm" : "text-muted-foreground"}`}
-                  title="תצוגת טבלה"
-                >
-                  <Table2 className="w-4 h-4" />
-                </button>
+          {loading ? (
+            <div className="flex justify-center py-20">
+              <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="text-center py-20 text-muted-foreground">
+              <p className="text-lg font-medium">
+                {statusView === "archive" ? "אין פערים בארכיון" : "אין פערים להצגה"}
+              </p>
+              <p className="text-sm mt-1">
+                {statusView === "archive" ? "פערים שיטופלו יופיעו כאן." : "שנה את הסננים או הוסף פער חדש."}
+              </p>
+            </div>
+          ) : layoutMode === "table" ? (
+            <GapTableView
+              gaps={pageItems}
+              sortField={columnSort?.field}
+              sortDir={columnSort?.dir}
+              onSort={handleColumnSort}
+              onEdit={openEdit}
+              onDelete={setDeleting}
+              onStatusChange={handleStatusChange}
+              onOpenDetails={setHistoryGap}
+            />
+          ) : (
+            <div dir="rtl" className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {pageItems.map((gap) => (
+                <GapCard
+                  key={gap.id}
+                  gap={gap}
+                  onEdit={openEdit}
+                  onDelete={setDeleting}
+                  onStatusChange={handleStatusChange}
+                  onClick={setQuickViewGap}
+                  onShowHistory={setHistoryGap}
+                  staleDays={staleDays}
+                  latestUpdate={latestUpdates[gap.id]}
+                />
+              ))}
+            </div>
+          )}
+
+          {!loading && filtered.length > 0 && (
+            <div className="flex items-center justify-between gap-3 flex-wrap bg-white rounded-xl border border-border p-3">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <span>פערים בעמוד:</span>
+                <Select value={String(perPage)} onValueChange={(v) => setPerPage(Number(v))}>
+                  <SelectTrigger className="w-[80px] h-8"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {PER_PAGE_OPTIONS.map((n) => (
+                      <SelectItem key={n} value={String(n)}>{n}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <span>מתוך {filtered.length}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="icon" className="h-8 w-8" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+                <span className="text-sm">עמוד {page} מתוך {totalPages}</span>
+                <Button variant="outline" size="icon" className="h-8 w-8" disabled={page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>
+                  <ChevronLeft className="w-4 h-4" />
+                </Button>
               </div>
             </div>
-
-            {loading ? (
-              <div className="flex justify-center py-20">
-                <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-              </div>
-            ) : filtered.length === 0 ? (
-              <div className="text-center py-20 text-muted-foreground">
-                <p className="text-lg font-medium">
-                  {statusView === "archive" ? "אין פערים בארכיון" : "אין פערים להצגה"}
-                </p>
-                <p className="text-sm mt-1">
-                  {statusView === "archive" ? "פערים שיטופלו יופיעו כאן." : "שנה את הסננים או הוסף פער חדש."}
-                </p>
-              </div>
-            ) : layoutMode === "table" ? (
-              <GapTableView
-                gaps={pageItems}
-                sortField={columnSort?.field}
-                sortDir={columnSort?.dir}
-                onSort={handleColumnSort}
-                onEdit={openEdit}
-                onDelete={setDeleting}
-                onStatusChange={handleStatusChange}
-                onOpenDetails={setHistoryGap}
-              />
-            ) : (
-              <div dir="rtl" className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {pageItems.map((gap) => (
-                  <GapCard
-                    key={gap.id}
-                    gap={gap}
-                    onEdit={openEdit}
-                    onDelete={setDeleting}
-                    onStatusChange={handleStatusChange}
-                    onClick={setQuickViewGap}
-                    onShowHistory={setHistoryGap}
-                    staleDays={staleDays}
-                    latestUpdate={latestUpdates[gap.id]}
-                  />
-                ))}
-              </div>
-            )}
-
-            {!loading && filtered.length > 0 && (
-              <div className="flex items-center justify-between gap-3 flex-wrap bg-white rounded-xl border border-border p-3">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <span>פערים בעמוד:</span>
-                  <Select value={String(perPage)} onValueChange={(v) => setPerPage(Number(v))}>
-                    <SelectTrigger className="w-[80px] h-8"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {PER_PAGE_OPTIONS.map((n) => (
-                        <SelectItem key={n} value={String(n)}>{n}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <span>מתוך {filtered.length}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="icon" className="h-8 w-8" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
-                    <ChevronRight className="w-4 h-4" />
-                  </Button>
-                  <span className="text-sm">עמוד {page} מתוך {totalPages}</span>
-                  <Button variant="outline" size="icon" className="h-8 w-8" disabled={page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>
-                    <ChevronLeft className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="stats" className="mt-4">
-            <GapStats gaps={gaps} />
-          </TabsContent>
-        </Tabs>
+          )}
+        </div>
       </main>
 
       <GapForm
