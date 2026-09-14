@@ -275,7 +275,161 @@ export function buildSeed() {
     { id: "accessrequest-2", email: "tal.avitan@example.com", full_name: "טל אביטן", status: "pending", assigned_role: "", created_date: isoOffset(1, 11, 0), updated_date: isoOffset(1, 11, 0) },
   ];
 
-  return { Gap, GapChange, GapUpdate, Constraint, Event, DailyRoutine, DailySummary, AccessRequest };
+  // ---------- משתמשים (User) — כדי שפאנל הניהול יוכל להציג/לערוך משתמשים ----------
+  const User = [
+    { id: "mock-user-1", full_name: "משתמש בדיקה", email: "test@kalag.local", role: "admin", pluga: "", equipment_manager: true, created_date: isoOffset(60, 8, 0), updated_date: isoOffset(60, 8, 0) },
+    { id: "mock-user-2", full_name: "יוסי כהן", email: "yossi.cohen@kalag.local", role: "קלפ", pluga: "פארן", equipment_manager: true, created_date: isoOffset(45, 8, 0), updated_date: isoOffset(45, 8, 0) },
+    { id: "mock-user-3", full_name: "דנה לוי", email: "dana.levi@kalag.local", role: "רסר", pluga: "בשור", equipment_manager: false, created_date: isoOffset(30, 8, 0), updated_date: isoOffset(30, 8, 0) },
+    { id: "mock-user-4", full_name: "אורי פרץ", email: "ori.peretz@kalag.local", role: "סגל", pluga: "צין", equipment_manager: false, created_date: isoOffset(20, 8, 0), updated_date: isoOffset(20, 8, 0) },
+  ];
+
+  // ---------- ציוד במחסנים (WarehouseItem) — מלאי זמין למשיכה בכל אחד משלושת המחסנים ----------
+  const warehouseItemDefs = [
+    { warehouse: "מכולה", name: "שמיכות", quantity: 40, returnable: true },
+    { warehouse: "מכולה", name: "מזרנים", quantity: 25, returnable: true },
+    { warehouse: "מכולה", name: "כריות", quantity: 30, returnable: true },
+    { warehouse: "מכולה", name: "נורות חילוף", quantity: 100, returnable: false },
+    { warehouse: "מכולה", name: "סוללות AA", quantity: 200, returnable: false },
+    { warehouse: "מחסן קרביץ", name: "אפודי מגן", quantity: 20, returnable: true },
+    { warehouse: "מחסן קרביץ", name: "קסדות", quantity: 20, returnable: true },
+    { warehouse: "מחסן קרביץ", name: "פנסי ראש", quantity: 25, returnable: true },
+    { warehouse: "מחסן קרביץ", name: "חבלים", quantity: 15, returnable: false },
+    { warehouse: "מחסן לוגיסטי", name: "שולחנות מתקפלים", quantity: 12, returnable: true },
+    { warehouse: "מחסן לוגיסטי", name: "כיסאות מתקפלים", quantity: 50, returnable: true },
+    { warehouse: "מחסן לוגיסטי", name: "אוהלים", quantity: 6, returnable: true },
+    { warehouse: "מחסן לוגיסטי", name: "גנרטור נייד", quantity: 3, returnable: true },
+    { warehouse: "מחסן לוגיסטי", name: "כבלי הארכה", quantity: 25, returnable: false },
+  ];
+  const WarehouseItem = warehouseItemDefs.map((w, i) => ({
+    id: `warehouseitem-${i + 1}`,
+    warehouse: w.warehouse,
+    name: w.name,
+    quantity: w.quantity,
+    returnable: w.returnable,
+    created_date: isoOffset(40, 8, 0),
+    updated_date: isoOffset(40, 8, 0),
+  }));
+
+  // ---------- היסטוריית בקשות משיכה (WithdrawalRequest) ----------
+  const withdrawalDefs = [
+    { warehouse: "מחסן קרביץ", pluga: "פארן", items: [{ name: "אפודי מגן", quantity: 5, returnable: true }], daysAgo: 10, returnDaysAgo: -5 },
+    { warehouse: "מחסן לוגיסטי", pluga: "רמון", items: [{ name: "שולחנות מתקפלים", quantity: 4, returnable: true }, { name: "כיסאות מתקפלים", quantity: 20, returnable: true }], daysAgo: 5, returnDaysAgo: -3 },
+    { warehouse: "מחסן לוגיסטי", pluga: "תמר", items: [{ name: "אוהלים", quantity: 2, returnable: true }], daysAgo: 15, returnDaysAgo: 2, notes: "לטיול פלוגתי" },
+    { warehouse: "מכולה", pluga: "בשור", items: [{ name: "שמיכות", quantity: 10, returnable: true }], daysAgo: 3, returnDaysAgo: -10 },
+    { warehouse: "מכולה", pluga: "צין", items: [{ name: "נורות חילוף", quantity: 15, returnable: false }, { name: "סוללות AA", quantity: 30, returnable: false }], daysAgo: 7 },
+    { warehouse: "מחסן קרביץ", pluga: "רמון", items: [{ name: "חבלים", quantity: 8, returnable: false }], daysAgo: 12 },
+  ];
+  const WithdrawalRequest = withdrawalDefs.map((w, i) => {
+    const p = person(i + 2);
+    return {
+      id: `withdrawal-${i + 1}`,
+      warehouse: w.warehouse,
+      items: w.items.map((it) => ({ name: it.name, quantity: it.quantity, returnable: it.returnable })),
+      requested_by_name: p.name,
+      pluga: w.pluga,
+      request_date: dateOffset(w.daysAgo),
+      expected_return_date: w.returnDaysAgo != null ? dateOffset(w.returnDaysAgo) : "",
+      notes: w.notes || "",
+      created_date: isoOffset(w.daysAgo, 10, 0),
+      updated_date: isoOffset(w.daysAgo, 10, 0),
+    };
+  });
+
+  // ---------- ציוד מוחזק כרגע ע״י פלוגות (EquipmentHolding) — פריטים "להחזרה" שטרם הוחזרו ----------
+  // (מתאים לבקשות ה-withdrawal הראשונות ברשימה, שכוללות פריטים לצוד להחזרה)
+  const holdingDefs = [
+    { item_name: "אפודי מגן", warehouse: "מחסן קרביץ", quantity: 5, pluga: "פארן", daysAgo: 10, returnDaysAgo: -5 },
+    { item_name: "שולחנות מתקפלים", warehouse: "מחסן לוגיסטי", quantity: 4, pluga: "רמון", daysAgo: 5, returnDaysAgo: -3 },
+    { item_name: "כיסאות מתקפלים", warehouse: "מחסן לוגיסטי", quantity: 20, pluga: "רמון", daysAgo: 5, returnDaysAgo: -3 },
+    // הפריט הבא כבר עבר את תאריך ההחזרה הצפוי — לדוגמה של ציוד "באיחור"
+    { item_name: "אוהלים", warehouse: "מחסן לוגיסטי", quantity: 2, pluga: "תמר", daysAgo: 15, returnDaysAgo: 2 },
+    { item_name: "שמיכות", warehouse: "מכולה", quantity: 10, pluga: "בשור", daysAgo: 3, returnDaysAgo: -10 },
+  ];
+  const EquipmentHolding = holdingDefs.map((h, i) => {
+    const p = person(i + 2);
+    return {
+      id: `equipmentholding-${i + 1}`,
+      item_name: h.item_name,
+      warehouse: h.warehouse,
+      quantity: h.quantity,
+      pluga: h.pluga,
+      held_by_name: p.name,
+      withdrawal_date: dateOffset(h.daysAgo),
+      expected_return_date: dateOffset(h.returnDaysAgo),
+      created_date: isoOffset(h.daysAgo, 10, 0),
+      updated_date: isoOffset(h.daysAgo, 10, 0),
+    };
+  });
+
+  // ---------- הגדרות ציוד (EquipmentSettings) — רשומה יחידה עם אחראי הקלף ורשימת תפוצה ----------
+  const EquipmentSettings = [
+    {
+      id: "equipmentsettings-1",
+      responsible_klaf_id: "mock-user-2",
+      responsible_klaf_name: "יוסי כהן",
+      notification_emails: [],
+      created_date: isoOffset(40, 8, 0),
+      updated_date: isoOffset(40, 8, 0),
+    },
+  ];
+
+  // ---------- משימות ישירות (DirectTask) ----------
+  const directTaskDefs = [
+    { title: "בדיקת מטפי כיבוי אש", pluga: "פארן", day: 0, start: "09:00", end: "10:00", status: "פתוחה" },
+    { title: "ניקוי מחסן ציוד", pluga: "בשור", day: -2, start: "13:00", end: "15:00", status: "טופלה" },
+    { title: "סיור ביטחוני משותף", responsible_plugas: ["צין", "רמון"], day: 1, start: "20:00", end: "22:00", status: "פתוחה" },
+    { title: "ספירת מלאי במחסן הלוגיסטי", pluga: "תמר", day: -5, start: "10:00", end: "12:00", status: "טופלה" },
+    { title: "תדרוך בטיחות אש", responsible_plugas: ["פארן", "בשור", "צין"], day: 2, start: "16:00", end: "17:00", status: "פתוחה" },
+    { title: "תחזוקת גנרטור", pluga: "רמון", day: -1, start: "08:00", end: "09:00", status: "טופלה" },
+  ];
+  const DirectTask = directTaskDefs.map((t, i) => ({
+    id: `directtask-${i + 1}`,
+    title: t.title,
+    pluga: t.pluga || "",
+    responsible_plugas: t.responsible_plugas || [],
+    task_date: dateOffset(-t.day),
+    start_time: t.start,
+    end_time: t.end,
+    status: t.status,
+    notes: "",
+    created_date: isoOffset(-t.day + 1, 8, 0),
+    updated_date: isoOffset(t.status === "טופלה" ? -t.day : -t.day + 1, 14, 0),
+  }));
+
+  // ---------- השלמות משימות שוטפות (TaskCompletion) — עבור ציר הזמן והדוחות בעמוד הסטטיסטיקה ----------
+  const taskCompletionDefs = [
+    { task_type: "event", task_id: "event-1", task_label: "יציאה לחופשה", pluga: "פארן", day: 2 },
+    { task_type: "event", task_id: "event-2", task_label: "ערב גיבוש פלוגתי", pluga: "צין", day: 4 },
+    { task_type: "shotaf", task_id: "shotaf-frisa_morning", task_field: "frisa_morning", task_label: "משיכת פינת פריסה", pluga: "בשור", day: 0 },
+    { task_type: "shotaf", task_id: "shotaf-noon_cleaning", task_field: "noon_cleaning", task_label: "ניקוי צהריים", pluga: "צין", day: 0 },
+    { task_type: "shotaf", task_id: "shotaf-evening_cleaning", task_field: "evening_cleaning", task_label: "ניקוי ערב", pluga: "תמר", day: 1 },
+  ];
+  const TaskCompletion = taskCompletionDefs.map((t, i) => ({
+    id: `taskcompletion-${i + 1}`,
+    task_type: t.task_type,
+    task_id: t.task_id,
+    task_field: t.task_field || "",
+    task_label: t.task_label,
+    task_date: weekDateStr(t.day, 0),
+    pluga: t.pluga,
+    created_date: isoOffset(6 - t.day, 18, 0),
+    updated_date: isoOffset(6 - t.day, 18, 0),
+  }));
+
+  // ---------- אירועים חוזרים (RecurringEvent) ----------
+  const RecurringEvent = [
+    { id: "recurringevent-1", title: "תדריך בוקר", start_time: "07:30", end_time: "08:00", recurrence: "daily", pluga: "", details: "תדריך יומי קצר לכלל הפלוגות", created_date: isoOffset(50, 8, 0), updated_date: isoOffset(50, 8, 0) },
+    { id: "recurringevent-2", title: "מסדר סוף שבוע", start_time: "16:00", end_time: "17:00", recurrence: "friday", pluga: "", details: "", created_date: isoOffset(50, 8, 0), updated_date: isoOffset(50, 8, 0) },
+  ];
+
+  // ---------- חריגים לאירועים חוזרים (RecurringOverride) ----------
+  const RecurringOverride = [];
+
+  return {
+    Gap, GapChange, GapUpdate, Constraint, Event, DailyRoutine, DailySummary, AccessRequest,
+    User, WarehouseItem, WithdrawalRequest, EquipmentHolding, EquipmentSettings,
+    DirectTask, TaskCompletion, RecurringEvent, RecurringOverride,
+  };
 }
 
 // משתמש הבדיקה המחובר אוטומטית במצב בדיקה — role: admin כדי לראות את כל האפליקציה כולל פאנל הניהול
