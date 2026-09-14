@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Pencil, Trash2, MapPin, Building2, Clock, CalendarPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const STATUS_STYLES = {
-  "טרם הועלה": "bg-amber-100 text-amber-800 border-amber-200",
-  "בטיפול": "bg-blue-100 text-blue-800 border-blue-200",
-  "טופל": "bg-emerald-100 text-emerald-800 border-emerald-200",
+const STATUS_THEME = {
+  "טרם הועלה": { stripe: "border-r-4 border-r-amber-400", tint: "bg-amber-50/40", badge: "bg-amber-100 text-amber-800 border-amber-200" },
+  "בטיפול": { stripe: "border-r-4 border-r-blue-400", tint: "bg-blue-50/40", badge: "bg-blue-100 text-blue-800 border-blue-200" },
+  "טופל": { stripe: "border-r-4 border-r-emerald-400", tint: "bg-emerald-50/40", badge: "bg-emerald-100 text-emerald-800 border-emerald-200" },
 };
 
 const PRIORITY_STYLES = {
@@ -31,21 +31,25 @@ function daysSince(dateStr) {
   return Math.floor(diff / (1000 * 60 * 60 * 24));
 }
 
-export default function GapCard({ gap, onEdit, onDelete, onStatusChange, staleDays = 7 }) {
+export default function GapCard({ gap, onEdit, onDelete, onStatusChange, onClick, staleDays = 7 }) {
   const days = daysSince(gap.updated_date);
   const isStale = days != null && days >= staleDays && gap.status !== "טופל";
+  const theme = STATUS_THEME[gap.status] || STATUS_THEME["טרם הועלה"];
 
   return (
     <Card
       dir="rtl"
+      onClick={() => onClick?.(gap)}
       className={cn(
-        "p-4 flex flex-col gap-3 transition-all hover:shadow-md",
-        isStale && "ring-2 ring-amber-300/70 bg-amber-50/40"
+        "p-4 flex flex-col gap-3 transition-all hover:shadow-md cursor-pointer",
+        theme.stripe,
+        theme.tint,
+        isStale && "ring-2 ring-amber-300/70"
       )}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
-          <span className={cn("text-xs font-medium px-2.5 py-1 rounded-full border", STATUS_STYLES[gap.status])}>
+          <span className={cn("text-xs font-medium px-2.5 py-1 rounded-full border", theme.badge)}>
             {gap.status}
           </span>
           <span className={cn("text-xs font-semibold px-2.5 py-1 rounded-full", PRIORITY_STYLES[gap.priority])}>
@@ -58,7 +62,7 @@ export default function GapCard({ gap, onEdit, onDelete, onStatusChange, staleDa
             </span>
           )}
         </div>
-        <div className="flex items-center gap-1 shrink-0">
+        <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
           <Button size="icon" variant="ghost" onClick={() => onEdit(gap)} className="h-8 w-8">
             <Pencil className="w-4 h-4" />
           </Button>
@@ -92,10 +96,10 @@ export default function GapCard({ gap, onEdit, onDelete, onStatusChange, staleDa
       </div>
 
       {gap.note && (
-        <p className="text-xs text-muted-foreground bg-muted/60 rounded-md p-2 leading-relaxed">{gap.note}</p>
+        <p className="text-xs text-muted-foreground bg-muted/60 rounded-md p-2 leading-relaxed line-clamp-2">{gap.note}</p>
       )}
 
-      <div className="flex items-center gap-2 pt-1 border-t border-border/60">
+      <div className="flex items-center gap-2 pt-1 border-t border-border/60" onClick={(e) => e.stopPropagation()}>
         <span className="text-xs text-muted-foreground">שנה סטטוס:</span>
         {["טרם הועלה", "בטיפול", "טופל"].map((s) => (
           <button
@@ -104,7 +108,7 @@ export default function GapCard({ gap, onEdit, onDelete, onStatusChange, staleDa
             className={cn(
               "text-xs px-2.5 py-1 rounded-full border transition-colors",
               gap.status === s
-                ? STATUS_STYLES[s]
+                ? (STATUS_THEME[s] || STATUS_THEME["טרם הועלה"]).badge
                 : "bg-transparent text-muted-foreground border-border hover:bg-muted"
             )}
           >

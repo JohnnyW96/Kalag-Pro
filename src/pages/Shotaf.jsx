@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Loader2, Sun, Sunset, Moon, ChevronRight, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PLUGOT, PLUGA_COLORS, SHOTAF_OPTIONS, formatHebrewDate, toDateStr } from "@/lib/constants";
+import { PLUGOT, PLUGA_COLORS, SHOTAF_OPTIONS, formatHebrewDate, toDateStr, getShotafTime } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 export default function Shotaf() {
@@ -82,6 +82,11 @@ export default function Shotaf() {
     );
   }
 
+  const timeStr = (field) => {
+    const t = getShotafTime(field, selectedDate);
+    return t ? `${t.start} - ${t.end}` : null;
+  };
+
   const panels = [
     { field: "frisa_morning", label: "משיכת פינת פריסה", icon: Sun },
     { field: "noon_cleaning", label: "ניקוי צהריים - פינת פריסה ושירותים", icon: Sunset },
@@ -117,6 +122,9 @@ export default function Shotaf() {
               <Sun className="w-5 h-5 text-slate-700" />
             </div>
             <h2 className="text-base font-semibold flex-1">מסדר בוקר - פלוגות אחראיות</h2>
+            <span className={cn("text-xs px-2 py-1 rounded-full whitespace-nowrap", timeStr("morning_assembly_plugas") ? "text-muted-foreground bg-white" : "text-slate-500 bg-slate-200")}>
+              {timeStr("morning_assembly_plugas") || "לא פעיל (שישי/שבת)"}
+            </span>
             {saving === "morning_assembly_plugas" && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
           </div>
           <div className="flex flex-wrap gap-2">
@@ -161,14 +169,17 @@ export default function Shotaf() {
                   <Icon className="w-5 h-5 text-slate-700" />
                 </div>
                 <h2 className="text-base font-semibold flex-1">{label}</h2>
+                <span className={cn("text-xs px-2 py-1 rounded-full whitespace-nowrap", timeStr(field) ? "text-muted-foreground bg-white" : "text-slate-500 bg-slate-200")}>
+                  {timeStr(field) || "לא פעיל (שישי/שבת)"}
+                </span>
                 {saving === field && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
               </div>
               <Select
-                value={routine?.[field] || ""}
+                value={routine?.[field] || "טרם הוחלט"}
                 onValueChange={(v) => updateField(field, v)}
               >
                 <SelectTrigger className="bg-white">
-                  <SelectValue placeholder="בחר פלוגה אחראית..." />
+                  <SelectValue placeholder="טרם הוחלט" />
                 </SelectTrigger>
                 <SelectContent>
                   {SHOTAF_OPTIONS.map((p) => (

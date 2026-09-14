@@ -1,6 +1,7 @@
 export const PLUGOT = ["פארן", "בשור", "צין", "רמון", "תמר"];
 
 export const LOCATIONS = [
+  "מגורים כללי",
   "מגורי בנים",
   "מגורי בנות",
   "ספסלים",
@@ -49,6 +50,37 @@ export function toDateStr(date) {
 }
 
 export const SHOTAF_OPTIONS = ["טרם הוחלט", ...PLUGOT];
+
+export const SHOTAF_TIMES = {
+  morning_assembly_plugas: {
+    start: "07:40", end: "08:00",
+    excludeDays: [5, 6],
+    overrides: { 4: { start: "07:10" } }
+  },
+  frisa_morning: { start: "15:00", end: "16:00", excludeDays: [5, 6] },
+  noon_cleaning: { start: "12:00", end: "13:30", excludeDays: [5, 6] },
+  evening_cleaning: { start: "18:00", end: "19:30", excludeDays: [5, 6] },
+};
+
+export function getShotafTime(field, date) {
+  const config = SHOTAF_TIMES[field];
+  if (!config) return null;
+  const day = date.getDay();
+  if (config.excludeDays?.includes(day)) return null;
+  let start = config.start;
+  let end = config.end;
+  if (config.overrides?.[day]) {
+    start = config.overrides[day].start;
+  }
+  return { start, end };
+}
+
+export const SHOTAF_FIELD_LABELS = {
+  morning_assembly_plugas: "מסדר בוקר",
+  frisa_morning: "משיכת פינת פריסה",
+  noon_cleaning: "ניקוי צהריים - פינת פריסה ושירותים",
+  evening_cleaning: "ניקוי ערב - פינת פריסה ושירותים",
+};
 
 export const EVENT_COLORS = {
   bg: "bg-slate-300",

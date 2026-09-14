@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Plus, Loader2, HardHat, AlertTriangle } from "lucide-react";
+import { Plus, Loader2, HardHat } from "lucide-react";
 import GapCard, { PRIORITY_RANK, daysSince } from "@/components/gaps/GapCard";
 import GapForm from "@/components/gaps/GapForm";
 import GapFilters from "@/components/gaps/GapFilters";
+import GapDetail from "@/components/gaps/GapDetail";
 import { PLUGOT } from "@/lib/constants";
+import { cn } from "@/lib/utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,6 +33,8 @@ export default function Home() {
   const [sort, setSort] = useState("priority");
   const [staleOnly, setStaleOnly] = useState(false);
   const [staleDays, setStaleDays] = useState(7);
+  const [viewMode, setViewMode] = useState("active");
+  const [detailGap, setDetailGap] = useState(null);
 
   const loadGaps = useCallback(async () => {
     try {
@@ -53,6 +57,8 @@ export default function Home() {
 
   const filtered = useMemo(() => {
     let list = gaps.filter((g) => {
+      if (viewMode === "active" && g.status === "טופל") return false;
+      if (viewMode === "archive" && g.status !== "טופל") return false;
       if (statusFilters.length > 0 && !statusFilters.includes(g.status)) return false;
       if (priorityFilters.length > 0 && !priorityFilters.includes(g.priority)) return false;
       if (companyFilter !== "all" && g.company !== companyFilter) return false;
@@ -86,7 +92,7 @@ export default function Home() {
       }
     });
     return list;
-  }, [gaps, statusFilters, priorityFilters, companyFilter, staleOnly, staleDays, search, sort]);
+  }, [gaps, statusFilters, priorityFilters, companyFilter, staleOnly, staleDays, search, sort, viewMode]);
 
   const stats = useMemo(() => {
     const byStatus = { "טרם הועלה": 0, "בטיפול": 0, "טופל": 0 };
@@ -159,7 +165,29 @@ export default function Home() {
           <StatCard label="סה״כ פערים" value={stats.total} tone="slate" />
           <StatCard label="טרם הועלה" value={stats["טרם הועלה"]} tone="amber" />
           <StatCard label="בטיפול" value={stats["בטיפול"]} tone="blue" />
-          <StatCard label="לא עודכנו לאחרונה" value={stats.stale} tone="red" icon={<AlertTriangle className="w-4 h-4" />} />
+          <StatCard label="טופל" value={stats["טופל"]} tone="emerald" />
+        </div>
+
+        {/* View mode toggle */}
+        <div className="flex items-center gap-2 bg-slate-100 rounded-lg p-1 max-w-xs">
+          <button
+            onClick={() => setViewMode("active")}
+            className={cn(
+              "flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors",
+              viewMode === "active" ? "bg-white text-slate-900 shadow-sm" : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            פעילים
+          </button>
+          <button
+            onClick={() => setViewMode("archive")}
+            className={cn(
+              "flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors",
+              viewMode === "archive" ? "bg-white text-slate-900 shadow-sm" : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            ארכיון
+          </button>
         </div>
 
         {/* Filters */}
@@ -188,8 +216,12 @@ export default function Home() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-20 text-muted-foreground">
-            <p className="text-lg font-medium">אין פערים להצגה</p>
-            <p className="text-sm mt-1">שנה את הסננים או הוסף פער חדש.</p>
+            <p className="text-lg font-medium">
+              {viewMode === "archive" ? "אין פערים בארכיון" : "אין פערים להצגה"}
+            </p>
+            <p className="text-sm mt-1">
+              {viewMode === "archive" ? "פערים שיטופלו יופיעו כאן." : "שנה את הסננים או הוסף פער חדש."}
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -200,6 +232,7 @@ export default function Home() {
                 onEdit={openEdit}
                 onDelete={setDeleting}
                 onStatusChange={handleStatusChange}
+                onClick={setDetailGap}
                 staleDays={staleDays}
               />
             ))}
@@ -230,6 +263,20 @@ export default function Home() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <GapDetail
+        gap={detailGap}
+        open={!!detailGap}
+        onClose={() => setDetailGap(null)}
+        onEdit={(gap) => {
+          setDetailGap(null);
+          openEdit(gap);
+        }}
+        onStatusChange={async (gap, status) => {
+          await handleStatusChange(gap, status);
+          setDetailGap({ ...gap, status });
+        }}
+      />
     </>
   );
 }
@@ -239,7 +286,7 @@ function StatCard({ label, value, tone, icon }) {
     slate: "bg-slate-100 text-slate-700",
     amber: "bg-amber-100 text-amber-700",
     blue: "bg-blue-100 text-blue-700",
-    red: "bg-red-100 text-red-700",
+    emerald: "bg-emerald-100 text-emerald-700",
   };
   return (
     <div className="bg-white rounded-xl border border-border p-4 flex items-center gap-3">
