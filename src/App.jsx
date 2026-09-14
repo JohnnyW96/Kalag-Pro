@@ -6,6 +6,7 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
+import { PreviewRoleProvider } from '@/lib/previewRoleContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import TestModeToggle from '@/components/TestModeToggle';
 import { Navigate } from 'react-router-dom';
@@ -19,6 +20,9 @@ import Shotaf from '@/pages/Shotaf';
 import Constraints from '@/pages/Constraints';
 import DailySummaryPage from '@/pages/DailySummary';
 import Tasks from '@/pages/Tasks';
+import Klaf from '@/pages/Klaf';
+import Statistics from '@/pages/Statistics';
+import Equipment from '@/pages/Equipment';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -58,6 +62,9 @@ const AuthenticatedApp = () => {
           <Route path="/constraints" element={<Constraints />} />
           <Route path="/daily-summary" element={<DailySummaryPage />} />
           <Route path="/tasks" element={<Tasks />} />
+          <Route path="/klaf" element={<Klaf />} />
+          <Route path="/statistics" element={<Statistics />} />
+          <Route path="/equipment" element={<Equipment />} />
         </Route>
       </Route>
       <Route path="*" element={<PageNotFound />} />
@@ -69,14 +76,16 @@ const AuthenticatedApp = () => {
 function App() {
 
   return (
-    <>
+<>
       {/* מוצג תמיד, גם לפני התחברות — כדי לאפשר כניסה למצב בדיקה בלי גישה אמיתית ל-base44 */}
       <TestModeToggle />
       <AuthProvider>
         <QueryClientProvider client={queryClientInstance}>
           <Router>
             <ScrollToTop />
-            <AuthenticatedApp />
+            <PreviewRoleProvider>
+              <AuthenticatedApp />
+            </PreviewRoleProvider>
           </Router>
           <Toaster />
         </QueryClientProvider>

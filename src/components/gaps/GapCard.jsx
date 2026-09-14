@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2, MapPin, Clock, CalendarPlus, Phone, Wrench, Info } from "lucide-react";
@@ -13,19 +13,36 @@ import {
   formatShortDate,
   formatDateTime,
 } from "@/components/gaps/gapHelpers";
-import GapDetailsModal from "@/components/gaps/GapDetailsModal";
 
-export default function GapCard({ gap, onEdit, onDelete, onStatusChange, staleDays = 7, latestUpdate, currentUser }) {
-  const [detailsOpen, setDetailsOpen] = useState(false);
+const STATUS_THEME = {
+  "טרם הועלה": { stripe: "border-r-4 border-r-amber-400", tint: "bg-amber-50/40", badge: STATUS_STYLES["טרם הועלה"] },
+  "בטיפול": { stripe: "border-r-4 border-r-blue-400", tint: "bg-blue-50/40", badge: STATUS_STYLES["בטיפול"] },
+  "טופל": { stripe: "border-r-4 border-r-emerald-400", tint: "bg-emerald-50/40", badge: STATUS_STYLES["טופל"] },
+};
+
+export default function GapCard({
+  gap,
+  onEdit,
+  onDelete,
+  onStatusChange,
+  onClick,
+  onShowHistory,
+  staleDays = 7,
+  latestUpdate,
+}) {
   const days = daysSince(gap.updated_date);
   const isStale = days != null && days >= staleDays && gap.status !== "טופל";
+  const theme = STATUS_THEME[gap.status] || STATUS_THEME["טרם הועלה"];
 
   return (
     <Card
       dir="rtl"
+      onClick={() => onClick?.(gap)}
       className={cn(
-        "p-4 flex flex-col gap-3 transition-all hover:shadow-md",
-        isStale && "ring-2 ring-amber-300/70 bg-amber-50/40"
+        "p-4 flex flex-col gap-3 transition-all hover:shadow-md cursor-pointer",
+        theme.stripe,
+        theme.tint,
+        isStale && "ring-2 ring-amber-300/70"
       )}
     >
       <div className="flex items-start justify-between gap-3">
@@ -45,10 +62,12 @@ export default function GapCard({ gap, onEdit, onDelete, onStatusChange, staleDa
             </span>
           )}
         </div>
-        <div className="flex items-center gap-1 shrink-0">
-          <Button size="icon" variant="ghost" onClick={() => setDetailsOpen(true)} className="h-8 w-8" title="פרטים והיסטוריית שינויים">
-            <Info className="w-4 h-4" />
-          </Button>
+        <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+          {onShowHistory && (
+            <Button size="icon" variant="ghost" onClick={() => onShowHistory(gap)} className="h-8 w-8" title="היסטוריית שינויים ועדכונים">
+              <Info className="w-4 h-4" />
+            </Button>
+          )}
           <Button size="icon" variant="ghost" onClick={() => onEdit(gap)} className="h-8 w-8" title="עריכת הפער">
             <Pencil className="w-4 h-4" />
           </Button>
@@ -109,12 +128,15 @@ export default function GapCard({ gap, onEdit, onDelete, onStatusChange, staleDa
       )}
 
       {gap.note && (
-        <p className="text-xs text-muted-foreground bg-muted/60 rounded-md p-2 leading-relaxed">{gap.note}</p>
+        <p className="text-xs text-muted-foreground bg-muted/60 rounded-md p-2 leading-relaxed line-clamp-2">{gap.note}</p>
       )}
 
       {latestUpdate && (
         <button
-          onClick={() => setDetailsOpen(true)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onShowHistory ? onShowHistory(gap) : onClick?.(gap);
+          }}
           className="flex items-start gap-2 text-xs text-slate-700 bg-slate-50 border border-slate-200 rounded-md p-2 text-right hover:bg-slate-100 transition-colors"
         >
           <Wrench className="w-3.5 h-3.5 mt-0.5 shrink-0" />
@@ -122,7 +144,7 @@ export default function GapCard({ gap, onEdit, onDelete, onStatusChange, staleDa
         </button>
       )}
 
-      <div className="flex items-center gap-2 pt-1 border-t border-border/60">
+      <div className="flex items-center gap-2 pt-1 border-t border-border/60" onClick={(e) => e.stopPropagation()}>
         <span className="text-xs text-muted-foreground">שנה סטטוס:</span>
         {["טרם הועלה", "בטיפול", "טופל"].map((s) => (
           <button
@@ -131,7 +153,7 @@ export default function GapCard({ gap, onEdit, onDelete, onStatusChange, staleDa
             className={cn(
               "text-xs px-2.5 py-1 rounded-full border transition-colors",
               gap.status === s
-                ? STATUS_STYLES[s]
+                ? (STATUS_THEME[s] || STATUS_THEME["טרם הועלה"]).badge
                 : "bg-transparent text-muted-foreground border-border hover:bg-muted"
             )}
           >
@@ -139,13 +161,6 @@ export default function GapCard({ gap, onEdit, onDelete, onStatusChange, staleDa
           </button>
         ))}
       </div>
-
-      <GapDetailsModal
-        gap={gap}
-        open={detailsOpen}
-        onClose={() => setDetailsOpen(false)}
-        currentUser={currentUser}
-      />
     </Card>
   );
 }
